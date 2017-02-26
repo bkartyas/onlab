@@ -24,7 +24,7 @@ $(document).ready(function(){
 		}
 	});
 
-	setTimeout(function(){$.ajax({
+	setInterval(function(){$.ajax({
 		method: 'GET',
 		url: '/next',
 		dataType: 'json',
@@ -32,7 +32,7 @@ $(document).ready(function(){
 			console.log(data);
 			phar.innerHTML=data[0][0];
 		}
-	})}, 5000);
+	})}, 3000);
 
 	/*setInterval(function(){$.ajax({
 		method: 'GET',

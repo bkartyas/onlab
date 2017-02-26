@@ -6,12 +6,12 @@ var spawner = require('child_process').spawn,
 var app = express();
 var rl;
 var proc;
-var output = '[';
+//var output = '[ ';
+var output = [];
 
-function cacheNext(){	
-	output = '[';
-	//proc.stdin.write('n\n');	
-}
+/*function cacheNext(){	
+	output = '[ ';
+}*/
 
 function createInput(data){
 	var input = data['size']['x'] + ' ' + data['size']['y'] + '\n';
@@ -35,30 +35,33 @@ app.post('/start', function(req, res){
 	console.log(data);
 	proc.stdin.write(data);
 
+	proc.stdin.write('n\n');	
 	rl = readline.createInterface({
 	  input: proc.stdout
 	}); rl.on('line', (line) => {
 	  	if(line && line != 'start'){
-		  	output += '"' + line.trim().split(/[ ]+/).join('", "') + '", ';
+		  	output.push(line);
+		  	//output += '"' + line.trim().split(/[ ]+/).join('", "') + '", ';
 			//console.log(line);
 			console.log(output);
 		}
 	});
 
-	cacheNext();
+	//cacheNext();
 	res.sendStatus(200);
 })
 
 app.get("/next", function(req, res){
 	console.log("request: next");
-	output += ']';
-	console.log(output);
-	res.end(output);
-	cacheNext();
+	//output += ']';
+	var myOut = output[0] + output[1];
+	console.log(myOut);
+	output.splice(0, 2);
+	//cacheNext();
+	res.end(myOut);
 })
 
 app.get("/a.js", function(req, res){
-	//console.log("sent");
 	res.sendFile("D:\\Suli\\2016-17(2.)\\Onlab\\onlab\\static\\a.js");
 })
 

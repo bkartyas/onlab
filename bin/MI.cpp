@@ -213,13 +213,14 @@ int main()
 	cout << endl;
 	//pitch.link();
 	cout << pitch;
+	cout << pitch;
 	
-	string in;
+	/*string in;
 	while (cin >> in) {
 		if (in == "n") {
 			cout << pitch;
 		}
-	}
+	}*/
 
 	/*int i = 1;
 	while (1) {
