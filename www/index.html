@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+	<head>
+	</head>
+	<body>
+		<div class="modal-body row">
+			<div id="control" class="col-xs-12 col-sm-12 col-md-4 col-lg-4 panel panel-default" align="center">
+					<label for="epoch">epoch:</label>
+    	    		<input type="number" id="epoch" min="1" value="10" step="1">
+    	    	<div data-role="rangeslider">
+					<label for="sizeX">X:</label>
+    	    		<input type="range" id="sizeX" min="1" max="20" value="5" onchange="resizePitch()">
+				</div>
+				<div data-role="rangeslider">
+					<label for="sizeY">Y:</label>
+    	    		<input type="range" id="sizeY" min="1" max="20" value="5" onchange="resizePitch()">
+				</div>
+				<button id="startButton" type="button" class="btn btn-primary">Start</button>
+			</div>
+			<div class="col-xs-12 col-sm-12 col-md-8 col-lg-8 panel panel-default">
+				<table id="pitch" class="table table-bordered"></table>
+			</div>	
+		</div>
+	</body>
+
+	<script src="https://code.jquery.com/jquery-1.11.3.min.js"></script>
+	<script src="https://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
+	<link rel="stylesheet" href="https://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css">
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css" integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" crossorigin="anonymous">
+
+	<script src="index.js"></script>
+</html>
