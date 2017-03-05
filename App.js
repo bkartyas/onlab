@@ -7,8 +7,10 @@ var app = express();
 var rl;
 var proc;
 var output = [];
+var outputSize;
 
 function createInput(data){
+	outputSize = data.pitch.type.length;
 	var x = data.pitch.type.length;
 	var y = data.pitch.type[0].length;
 	var input = x + ' ' + y + '\n';
@@ -38,8 +40,8 @@ app.post('/start', function(req, res){
 	}); rl.on('line', (line) => {
 	  	if(line && line != 'start'){
 		  	output.push(line);
-			console.log("readed:" + line);
-			console.log(output);
+			/*console.log("readed:" + line);
+			console.log(output);*/
 		}
 	});
 
@@ -47,10 +49,25 @@ app.post('/start', function(req, res){
 })
 
 app.get("/next", function(req, res){
-	console.log("request: next");
-	var myOut = output[0] + output[1];
+	console.log("request:\t/next");
+	
+	var myOut = '';
+	if(output.length != 0){
+		myOut += '{"pitch":[';
+		for(let i = 0; i < outputSize; i++){
+			myOut += '["';
+			myOut += output[i].split(' ').join('","').slice(0, -2);
+			myOut += '],';
+		}
+		myOut = myOut.slice(0, -1);
+		output.splice(0, outputSize);
+		myOut += ']}';
+	} else {
+		myOut = '{"status":"end"}';
+	}
+
+	console.log('Response:');
 	console.log(myOut);
-	output.splice(0, 2);
 	res.end(myOut);
 })
 

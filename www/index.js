@@ -74,7 +74,7 @@ function stepStatus(tableData){
 	break;
 	case "blue":
 		tableData.style.backgroundColor = "yellow";         
-		data.pitch.type[y][x] = "F";
+		data.pitch.type[y][x] = "E";
 	break;
 	case "yellow":
 		tableData.style.backgroundColor = "white";
@@ -104,14 +104,24 @@ $(document).ready(function(){
 			}
 		});
 
-		setInterval(function(){$.ajax({
+		var intervalID = setInterval(function(){$.ajax({
 			method: 'GET',
 			url: '/next',
 			dataType: 'json',
-			success: function(data){
-				console.log(data);
-				phar.innerHTML=data;
-		}
+            contentType: "application/json; charset=utf-8",
+			success: function(response){
+						console.log(response);
+						if(response['status'] === 'end'){
+							clearInterval(intervalID);
+						} else {
+							var pitch = response.pitch;
+							for(let i = 0; i < pitch.size; i++){
+								for(let j = 0; j < pitch.size; j++){
+									let field = pitch[i][j].split(";");
+								}		
+							}
+						}
+			}
 	})}, 3000); });
 	
 });

@@ -1,6 +1,7 @@
-#include<iostream>
-#include<vector>
-#include<string>
+#include <iostream>
+#include <stdlib.h>
+#include <vector>
+#include <string>
 
 using namespace std;
 
@@ -24,17 +25,23 @@ class Platform {
 protected:
 	friend class Pitch;
 	double reward;
+    Agent *agent;
 	Platform *left;
 	Platform *up;
 	Platform *right;
 	Platform *down;
-	
+
 public:
 
 	Platform(const double &reward): reward(reward) {}
 
+	bool step(Agent *agent){
+        this->agent = agent;
+        return false;
+	};
+
 	virtual void draw(ostream &os) {
-		cout << "P;" << (reward+1) << ' ';
+		cout << "P;" << (reward) << ' ';
 	}
 };
 
@@ -45,6 +52,10 @@ public:
 	virtual void draw(ostream &os) {
 		cout << "W;" << reward << ' ';
 	}
+
+	bool step(const Agent *agent){
+	    return false;
+	}
 };
 
 class Pitch {
@@ -52,6 +63,7 @@ class Pitch {
 	Platform*** pitch;
 	Platform* start;
 	Platform* end;
+
 public:
 	Pitch(const int &x, const int &y): x(x), y(y) {
 		pitch = new Platform**[x];
@@ -68,14 +80,16 @@ public:
 	}
 
 	void add(const Vec2 &pos, const char &type, const double & weight) {
-		
+
 		switch (type)
 		{
 		case 'P':
 			pitch[pos.x][pos.y] = new Platform(weight);
 			break;
 		case 'A':
+			//Agent *agent = new Agent(this);
 			pitch[pos.x][pos.y] = new Platform(weight);
+			//Agent->setPlatform(pitch[pos.x][pos.y]);
 			break;
 		case 'E':
 			pitch[pos.x][pos.y] = new Platform(weight);
@@ -115,8 +129,8 @@ public:
 
 	}
 
-	void step(Agent &agent, const Vec2 &dir) const {
-		
+	void step(Agent &Agent, const Vec2 &dir) const {
+
 	}
 
 	Vec2 getSize() const {
@@ -165,11 +179,11 @@ public:
 
 class Agent {
 	Knowledge knowledge;
-	const Platform *platform;
+	Platform *platform;
 public:
 	Agent(const Pitch & pitch) : knowledge(pitch.getSize().x*pitch.getSize().y, 4) {}
 
-	void setPlatform(const Platform *platform) { this->platform = platform; }
+    void setPlatform(Platform *platform) { this->platform = platform; platform->step(this); }
 
 	void setWeight(const Vec2 &dir, const double &w) {}
 
@@ -196,7 +210,7 @@ vector<string> split(const string &s, const char &delimiter) {
 int main()
 {
 	cout << "start" << endl;
-	
+
 	int sizeX, sizeY;
 	cin >> sizeX >> sizeY;
 	Pitch pitch(sizeX, sizeY);
@@ -206,7 +220,8 @@ int main()
 		for (int j = 0; j < sizeX; j++) {
 			string input; cin >> input;
 			vector<string> settings = split(input, ';');
-			pitch.add(Vec2(i, j), settings[0][0], stod(settings[1]));
+			char *a;
+			pitch.add(Vec2(i, j), settings[0][0], strtod(settings[1].c_str(), &a));
 			//cout << settings[0][0] << stod(settings[1]);
 		}
 	}
@@ -214,26 +229,4 @@ int main()
 	//pitch.link();
 	cout << pitch;
 	cout << pitch;
-	
-	/*string in;
-	while (cin >> in) {
-		if (in == "n") {
-			cout << pitch;
-		}
-	}*/
-
-	/*int i = 1;
-	while (1) {
-		string input;
-		cin >> input;
-
-		if (input == "exit") {
-			break;
-		}
-		else if (input == "n") {
-			cout << "kortefa" << i << endl;
-			cout << "kortefa" << i << endl;
-			i++;
-		}
-	}*/
 }
