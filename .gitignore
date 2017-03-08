@@ -1,5 +1,6 @@
-/bin/MI.exe
-/bin/MI.ilk
-/bin/MI.pdb
+!/bin/*.h
+!/bin/*.cpp
+/bin/*.exe
+/bin/*.exe
 /node_modules/*
 /MI/*
