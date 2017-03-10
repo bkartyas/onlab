@@ -1,6 +1,5 @@
 !/bin/*.h
 !/bin/*.cpp
-/bin/*.exe
-/bin/*.exe
+/bin/*
 /node_modules/*
 /MI/*

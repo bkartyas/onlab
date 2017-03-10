@@ -34,12 +34,14 @@ class Agent {
 public:
 	Agent(const int &x, const int &y, Platform *start);
 
-    void learn();
+    void learn(const double& alpha, const double& gamma);
 
     void setEnd(Platform *platform);
 
 	double step(Platform *next);
 	double step(const Direction &dir);
+
+	ostream& draw(ostream &os, const int &i, const int &j) const;
 };
 
 #endif // AGENT_H_INCLUDED

@@ -37,6 +37,8 @@ ostream& Knowledge::draw(ostream& os) const{
         }
         cout << endl;
     }
+
+	return os;
 };
 
 ostream& operator<<(ostream & os, const Knowledge &knowledge) {
@@ -49,7 +51,7 @@ Agent::Agent(const int &x, const int &y, Platform *start) : knowledge(x, y, 4), 
     start->step(this);
 }
 
-void Agent::learn(){
+void Agent::learn(const double& alpha, const double& gamma){
     if(platform == finish){
         start->step(this);
         platform->step(nullptr);
@@ -95,9 +97,7 @@ void Agent::learn(){
         }
     }
 
-    knowledge.thoughts[pos.x][pos.y][direction] += 0.05 * (reward + 0.9 * knowledge.thoughts[newPos.x][newPos.y][newMax] - knowledge.thoughts[pos.x][pos.y][direction]);
-
-    cout << knowledge << endl;
+    knowledge.thoughts[pos.x][pos.y][direction] += alpha * (reward + gamma * knowledge.thoughts[newPos.x][newPos.y][newMax] - knowledge.thoughts[pos.x][pos.y][direction]);
 };
 
 void Agent::setEnd(Platform *platform) {
@@ -127,4 +127,15 @@ double Agent::step(const Direction &dir) {
         return platform->getReward();
     }
     return -1000.0;
+}
+
+ostream& Agent::draw(ostream &os, const int &i, const int &j) const {
+	for (int k = 0; k < 4; k++) {
+		os << knowledge.thoughts[i][j][k];
+		if (k != 3) {
+			os << ",";
+		}
+	}
+
+	return os;
 }

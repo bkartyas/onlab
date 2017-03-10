@@ -31,7 +31,7 @@ public:
     Platform* inDirection(const Direction &dir);
 	virtual bool step(Agent *agent) = 0;
 
-	virtual void draw(ostream &os) = 0;
+	virtual void draw(ostream &os) const = 0;
 };
 
 
@@ -43,7 +43,7 @@ public:
 
 	bool step(Agent *agent);
 
-	virtual void draw(ostream &os);
+	virtual void draw(ostream &os) const;
 };
 
 
@@ -53,7 +53,7 @@ public:
 
 	bool step(Agent *agent);
 
-    virtual void draw(ostream &os);
+    virtual void draw(ostream &os) const;
 };
 
 

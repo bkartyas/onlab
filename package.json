@@ -4,7 +4,7 @@
   "description": "",
   "main": "App.js",
   "dependencies": {
-    "body-parser": "^1.16.1",
+    "body-parser": "^1.17.1",
     "express": "^4.14.1"
   },
   "devDependencies": {},

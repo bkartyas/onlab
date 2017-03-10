@@ -10,7 +10,7 @@ double Platform::getReward(){ return reward; };
 Vec2 Platform::getPosition(){ return position; };
 
 Platform* Platform::inDirection(const Direction &dir){
-    Platform* next;
+    Platform* next = nullptr;
     switch(dir){
         case Direction::left:
             next = left;
@@ -29,6 +29,7 @@ Platform* Platform::inDirection(const Direction &dir){
     return next;
 }
 
+
 NormalPlatform::NormalPlatform(const Vec2 &position, const double& reward): Platform(position, reward) {};
 
 bool NormalPlatform::step(Agent *agent){
@@ -43,11 +44,11 @@ bool NormalPlatform::step(Agent *agent){
     return false;
 }
 
-void NormalPlatform::draw(ostream &os) {
+void NormalPlatform::draw(ostream &os) const {
 	if(!agent){
-        cout << "P;" << (reward) << ' ';
+        cout << "P," << (reward);
 	} else {
-        cout << "A;" << (reward) << ' ';
+        cout << "A," << (reward);
 	}
 }
 
@@ -58,8 +59,8 @@ bool WallPlatform::step(Agent *agent){
     return false;
 }
 
-void WallPlatform::draw(ostream &os) {
-	cout << "W;" << reward << ' ';
+void WallPlatform::draw(ostream &os) const {
+	cout << "W," << reward;
 }
 
 

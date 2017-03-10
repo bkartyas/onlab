@@ -1,4 +1,5 @@
 #include <iostream>
+#include <string>
 #include <stdlib.h>
 #include "Pitch.h"
 #include "Platform.h"
@@ -35,13 +36,13 @@ Pitch::~Pitch() {
 }
 
 Agent* Pitch::initialize(){
-    Platform* finish;
+    Platform* finish = nullptr;
     PlatformFactory pf;
 
 	for (int i = 0; i < x; i++) {
 		for (int j = 0; j < y; j++) {
 			string input; cin >> input;
-			vector<string> settings = split(input, ';');
+			vector<string> settings = split(input, ',');
 			char *a;
 			pitch[i][j] = pf.create(Vec2(i, j), settings[0][0], strtod(settings[1].c_str(), &a));
 			if(settings[0][0] == 'E'){ finish = pitch[i][j]; } else
@@ -49,7 +50,9 @@ Agent* Pitch::initialize(){
         }
 	}
 
-	agents->setEnd(finish);
+	if (agents && finish) {
+		agents->setEnd(finish);
+	}
 	link();
 
 	return agents;
@@ -90,6 +93,9 @@ void Pitch::draw(ostream &os) const {
 	for (int i = 0; i < x; i++) {
 		for (int j = 0; j < y; j++) {
 			pitch[i][j]->draw(os);
+			os << ',';
+			agents->draw(os, i, j);
+			os << ' ';
 		}
 		os << endl;
 	}

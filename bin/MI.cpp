@@ -12,15 +12,20 @@ int main()
 {
 	cout << "start" << endl;
 
-	int sizeX, sizeY;
-	cin >> sizeX >> sizeY;
-	Pitch pitch(sizeX, sizeY);
-    Agent* agent = pitch.initialize();
+	//while (1) {
+		int sizeX, sizeY;
+		cin >> sizeX >> sizeY;
+		double epoch, alpha, gamma;
+		cin >> epoch >> alpha >> gamma;
+		Pitch pitch(sizeX, sizeY);
+		Agent* agent = pitch.initialize();
 
-    cout << endl;
+		cout << endl;
+		cout << pitch << endl;
 
-    for(int i = 0; i < 300; i++){
-        agent->learn();
-        cout << pitch << endl;
-    }
+		for (int i = 0; i < epoch; i++) {
+			agent->learn(alpha, gamma);
+			cout << pitch << endl;
+		}
+	//}
 }
