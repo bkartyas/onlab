@@ -2,6 +2,11 @@
 	background-color: #f7f7f9;
 }
 
+.agent {
+	background-image: url(pictures/agent.jpg);
+	background-size: 100%;
+}
+
 .pitch .platform {
 	background-color: white;
 	vertical-align: middle;

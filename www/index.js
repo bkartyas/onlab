@@ -1,6 +1,7 @@
 var type =  [[]];
 var maxQ;
 var minQ;
+var intervalID;
 var running = false;
 
 function readData(){
@@ -72,16 +73,21 @@ function createTableData(x, y){
 	} else {
 		let newTable = document.createElement("table");
 		newTable.classList.add("action");
-			for(let i = 0; i < 3; i++){
-				let newTRin = document.createElement("tr");
-				for(let j = 0; j < 3; j++){
-					let newTD = document.createElement("td");
-					newTD.id = "action" + actionType(j, i) + x + "_" + y;
-					newTRin.appendChild(newTD);
-				}
-				newTable.appendChild(newTRin);
+		for(let i = 0; i < 3; i++){
+			let newTRin = document.createElement("tr");
+			for(let j = 0; j < 3; j++){
+				let newTD = document.createElement("td");
+				newTD.id = "action" + actionType(j, i) + x + "_" + y;
+				newTRin.appendChild(newTD);
 			}
-			newTD.appendChild(newTable);
+			newTable.appendChild(newTRin);
+		}
+		newTD.appendChild(newTable);
+
+		startButton.innerHTML = "Stop";
+		startButton.classList.remove("btn-success");
+  		startButton.classList.add("btn-warning");
+  		startButton.onclick = stopLearning;
   	}
 
     //newTD.style.backgroundImage = "url('http://clipart-library.com/image_gallery/145213.jpg')";
@@ -124,6 +130,7 @@ function stepStatus(tableData){
 		type[y][x] = "W";
 		break;
 	case "black":
+		//tableData.classList.add("agent");
 		tableData.style.backgroundColor = "blue";
 		type[y][x] = "A";
 		break;
@@ -244,7 +251,7 @@ function startLearning(){
 			}
 		)
 
-		var intervalID = setInterval(function(){
+		intervalID = setInterval(function(){
 			queryNext(function(response){
 						console.log(response);
 						if(response['status'] === 'end'){
@@ -256,6 +263,24 @@ function startLearning(){
 					}
 			)}, Number(speed.value)
 		);
+}
+
+function stopLearning(){
+	clearInterval(intervalID);
+
+	$.ajax({
+			method: 'GET',
+			url: '/stop',
+			dataType: 'json',
+            contentType: "application/json; charset=utf-8"
+	})
+
+	running = false;
+	resizePitch();
+	startButton.innerHTML = "Start";
+	startButton.classList.remove("btn-warning");
+  	startButton.classList.add("btn-success");
+  	startButton.onclick = startLearning;
 }
 
 $(document).ready(function(){

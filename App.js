@@ -65,6 +65,18 @@ app.post('/start', function(req, res){
 	res.sendStatus(200);
 })
 
+app.get('/stop', function(req, res){
+	log('request:\t/stop');
+	proc.kill();
+	rl.close();
+
+	output = [];
+	outputEnd = false;
+	outBefore = null;
+	outputSize = null;
+	res.sendStatus(200);
+})
+
 function createOutput(){
 	out = { "pitch": []};
 	for(let i = 0; i < outputSize; i++){
@@ -130,6 +142,4 @@ app.get("/next", function(req, res){
 
 app.use(express.static('www'));
 
-var server = app.listen(3000, function(){
-	log('www');
-})
+var server = app.listen(3000, function(){})
