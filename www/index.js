@@ -92,7 +92,7 @@ function createTableData(x, y){
 function createRewardInput(){
 	let textBox = document.createElement("input");
 	textBox.classList.add("reward");
-	textBox.setAttribute("value", "10");
+	textBox.setAttribute("value", "0");
 	textBox.id = "pTB" + i + "_" + j;
 
 	return textBox;
@@ -181,7 +181,7 @@ function directionMap(index){
 }
 
 function GreenValue(value){
-	rb = (((maxQ - minQ)/(value - minQ)) * 255);
+	rb = ((1 - (maxQ - minQ)/(value - minQ)) * 255);
 	return 'rgb(' + rb + ',255,' + rb + ')';
 }
 
@@ -208,25 +208,44 @@ function refreshPitch(pitchData){
 	}
 }
 
-function startLearning(){
-	var nextValue;
-		running = true;
-		data = readData();
-		console.log(data);
-		resizePitch();
-		$.ajax({
-			method: 'POST',
-			url: '/start',
-			data: data,
-			dataType: 'json'
-		});
-
-		var intervalID = setInterval(function(){$.ajax({
+function queryNext(onSuccess){
+	$.ajax({
 			method: 'GET',
 			url: '/next',
 			dataType: 'json',
             contentType: "application/json; charset=utf-8",
 			success: function(response){
+						onSuccess(response);
+					}
+	})
+}
+
+function startLearning(){
+	var nextValue;
+		running = true;
+		data = readData();
+		console.log(data);
+		$.ajax({
+			method:   'POST',
+			url: 	  '/start',
+			data: 	  data,
+			dataType: 'json',
+			async: 	false
+		});
+
+		queryNext(function(res){
+				resizePitch();
+				console.log(res);
+				if(res['status'] === 'end'){
+					running = false;
+				} else {
+					refreshPitch(res.pitch);
+				}
+			}
+		)
+
+		var intervalID = setInterval(function(){
+			queryNext(function(response){
 						console.log(response);
 						if(response['status'] === 'end'){
 							clearInterval(intervalID);
@@ -234,8 +253,9 @@ function startLearning(){
 						} else {
 							refreshPitch(response.pitch);
 						}
-			}
-	})}, 500);
+					}
+			)}, Number(speed.value)
+		);
 }
 
 $(document).ready(function(){

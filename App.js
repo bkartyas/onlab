@@ -11,6 +11,7 @@ app.use(bodyParser.json());
 var rl;
 var proc;
 var output = [];
+var outputEnd = false;
 var outBefore;
 var outputSize;
 
@@ -47,10 +48,18 @@ app.post('/start', function(req, res){
 	proc.stdin.write('n\n');
 	rl = readline.createInterface({
 	  input: proc.stdout
-	}); rl.on('line', (line) => {
-	  	if(line && line != 'start'){
+	});
+	rl.on('line', (line) => {
+	  	if(line === 'start'){
+			outputEnd = false;
+	  	} else if(line === 'end'){
+			rl.close();
+			outputEnd = true;
+	  	} else if(line){
+
 		  	output.push(line);
 		}
+		//console.log(line);
 	});
 
 	res.sendStatus(200);
@@ -74,7 +83,11 @@ app.get("/next", function(req, res){
 	log("request:\t/next");
 
 	var myOut = { "pitch": []};
-	if(output.length != 0){
+	if(!outputEnd || output.length !== 0){
+		/*log("EZ KŐŐŐŐŐŐ!!!!!!!!!!!!!", output)
+		log("meg ez!!!!!!!!!!!!!", outputEnd)*/
+		while(output.length === 0){ }
+
 		if(!outBefore){
 			outBefore = createOutput();
 
@@ -109,7 +122,7 @@ app.get("/next", function(req, res){
 		myOut.status = 'end';
 	}
 
-	//console.log(output);
+	log('Output:', outBefore);
 	log('Response:', myOut);
 	res.json(myOut);
 	res.end();

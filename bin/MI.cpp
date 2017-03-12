@@ -27,5 +27,7 @@ int main()
 			agent->learn(alpha, gamma);
 			cout << pitch << endl;
 		}
+
+		cout << "end";
 	//}
 }
