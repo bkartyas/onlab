@@ -37,8 +37,19 @@ function createInput(data){
 	return input;
 }
 
+function initializeVariables(){
+	if(proc) { proc.kill() };
+	if(rl) { rl.close() };
+
+	output = [];
+	outputEnd = false;
+	outBefore = null;
+	outputSize = null;
+}
+
 app.post('/start', function(req, res){
 	log('request:\t/start');
+	initializeVariables();
 	proc = spawner(".\\bin\\MI.exe"),
 	log('execute:\t.\\bin\\MI.exe', req.body);
 	data = createInput(req.body);
@@ -67,13 +78,8 @@ app.post('/start', function(req, res){
 
 app.get('/stop', function(req, res){
 	log('request:\t/stop');
-	proc.kill();
-	rl.close();
 
-	output = [];
-	outputEnd = false;
-	outBefore = null;
-	outputSize = null;
+	initializeVariables();
 	res.sendStatus(200);
 })
 
@@ -91,18 +97,20 @@ function createOutput(){
 	return out;
 }
 
-app.get("/next", function(req, res){
-	log("request:\t/next");
+function createResponse(){
+	if(output.length < outputSize){
+		var promise = new Promise(function(resolve, reject) {
+	    	setTimeout(function() {
+	       		resolve(createResponse());
+	     	}, 25);
+	   });
+	   return promise;
+	}
+	var myOut = { "pitch": []};;
 
-	var myOut = { "pitch": []};
-	if(!outputEnd || output.length !== 0){
-		/*log("EZ KŐŐŐŐŐŐ!!!!!!!!!!!!!", output)
-		log("meg ez!!!!!!!!!!!!!", outputEnd)*/
-		while(output.length === 0){ }
-
-		if(!outBefore){
+	if(!outBefore){
 			outBefore = createOutput();
-
+			log('Out:', outBefore);
 			for(let i = 0; i < outputSize; i++){
 				for(let j = 0; j < fields.length-1; j++){
 					let values = outBefore.pitch[i][j].split(',');
@@ -115,7 +123,7 @@ app.get("/next", function(req, res){
 			}
 		} else {
 			out = createOutput();
-
+			log('Out:', out);
 			for(let i = 0; i < outputSize; i++){
 				for(let j = 0; j < fields.length-1; j++){
 					if(out.pitch[i][j] !== outBefore.pitch[i][j]){
@@ -130,15 +138,27 @@ app.get("/next", function(req, res){
 				}
 			}
 		}
+
+	return myOut;
+}
+
+app.get("/next", function(req, res){
+	log("request:\t/next");
+
+	if(!outputEnd || output.length !== 0){
+		/*log("EZ KŐŐŐŐŐŐ!!!!!!!!!!!!!", output)
+		log("meg ez!!!!!!!!!!!!!", outputEnd)*/
+
+		myOut = createResponse();
 	} else {
 		myOut.status = 'end';
 	}
 
-	log('Output:', outBefore);
-	log('Response:', myOut);
+	/*log('Output:', outBefore);
+	log('Response:', myOut);*/
 	res.json(myOut);
 	res.end();
-})
+});
 
 app.use(express.static('www'));
 

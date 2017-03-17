@@ -7,6 +7,19 @@
 	background-size: 100%;
 }
 
+.finish {
+	background-image: url(pictures/finish.jpg);
+	background-size: 100%;
+}
+
+.wall {
+	background-image: url(pictures/wall.jpg);
+	background-size: 100%;
+}
+
+.emptyPlatform {
+}
+
 .pitch .platform {
 	background-color: white;
 	vertical-align: middle;

@@ -1,4 +1,5 @@
-var type =  [[]];
+var type =  [];
+var Qvalues =  [];
 var maxQ;
 var minQ;
 var intervalID;
@@ -38,9 +39,11 @@ function resizePitch(){
 
 	for(i = 0; i < y; i++){
 		type.push([]);
+		Qvalues.push([]);
 		let newTR = document.createElement("tr");
 		for(j = 0; j < x; j++){
 			type[i].push("P");
+			Qvalues[i].push([0,0,0,0]);
 			newTR.appendChild(createTableData(j, i));
 		}
 		pitch.appendChild(newTR);
@@ -60,6 +63,7 @@ function actionType(x, y){
 function createTableData(x, y){
 	let newTD = document.createElement("td");
 	newTD.classList.add("platform");
+	newTD.classList.add("emptyPlatform");
 	newTD.id = "pTD" + x + "_" + y;
 
 	if(!running){
@@ -98,7 +102,7 @@ function createTableData(x, y){
 function createRewardInput(){
 	let textBox = document.createElement("input");
 	textBox.classList.add("reward");
-	textBox.setAttribute("value", "0");
+	textBox.setAttribute("value", "-10");
 	textBox.id = "pTB" + i + "_" + j;
 
 	return textBox;
@@ -119,48 +123,52 @@ function createRewardInput(){
 	return newTable;
 }*/
 
+function hasClass(element, cls) {
+    return (' ' + element.className + ' ').indexOf(' ' + cls + ' ') > -1;
+}
+
 function stepStatus(tableData){
 	var parsedID = tableData.id.split("pTD")[1].split("_");
 	var x = parsedID[0];
 	var y = parsedID[1];
 
-	switch(tableData.style.backgroundColor){
-	case "white":
-		tableData.style.backgroundColor = "black";
-		type[y][x] = "W";
-		break;
-	case "black":
-		//tableData.classList.add("agent");
-		tableData.style.backgroundColor = "blue";
-		type[y][x] = "A";
-		break;
-	case "blue":
-		tableData.style.backgroundColor = "yellow";
-		type[y][x] = "E";
-		break;
-	case "yellow":
-		tableData.style.backgroundColor = "white";
-		type[y][x] = "P";
-		break;
-	default:
-		tableData.style.backgroundColor = "white";
-		type[y][x] = "P";
+	if(hasClass(tableData, "emptyPlatform")){
+		tableData.classList.remove("emptyPlatform");
+	  	tableData.classList.add("wall");
+	} else if(hasClass(tableData, "wall")){
+		tableData.classList.remove("wall");
+	  	tableData.classList.add("agent");
+	} else if(hasClass(tableData, "agent")){
+		tableData.classList.remove("agent");
+	  	tableData.classList.add("finish");
+	} else if(hasClass(tableData, "finish")){
+		tableData.classList.remove("finish");
+	  	tableData.classList.add("emptyPlatform");
 	}
 }
 
-function getTypeColor(type){
+function setTypeClass(element, typeClass){
+	element.classList.remove("emptyPlatform");
+	element.classList.remove("wall");
+	element.classList.remove("agent");
+	element.classList.remove("finish");
+	element.classList.add(typeClass);
+}
+
+
+function getTypeClass(type){
 	switch(type){
 	case "P":
-		return "white";
+		return "emptyPlatform";
 		break;
 	case "W":
-		return "black";
+		return "wall";
 		break;
 	case "A":
-		return "blue";
+		return "agent";
 		break;
 	case "E":
-		return "yellow";
+		return "finish";
 		break;
 	}
 }
@@ -187,32 +195,87 @@ function directionMap(index){
 	}
 }
 
+function rescaleQcolor(){
+	var x = sizeX.value;
+	var y = sizeY.value;
+
+	for(let i = 0; i < 4; i++){
+		for(let j = 0; j < x; j++){
+			for(let k = 0; k < y; k++){
+				id = "action" + directionMap(i) + x + '_' + y;
+			}
+		}
+	}
+}
+
 function GreenValue(value){
-	rb = ((1 - (maxQ - minQ)/(value - minQ)) * 255);
+	var rb;
+	if(value === maxQ){
+		rb = 255;
+	} else {
+		rb = ((1 - maxQ/value) * 255);
+	}
 	return 'rgb(' + rb + ',255,' + rb + ')';
 }
 
-function refreshPitch(pitchData){
+function RedValue(value){
+	var gb;
+	if(value === minQ){
+		gb = 255;
+	} else {
+		gb = ((1 - (minQ)/(minQ - value)) * 255);
+	}
+	return 'rgb(255,' + gb + ',' + gb + ')';
+}
 
-	if(!maxQ && pitchData.length !== 0){ maxQ = pitchData[0].Qvalues[0]; };
-	if(!minQ && pitchData.length !== 0){ minQ = pitchData[0].Qvalues[0]; };
+function refreshQvalues(){
+	console.log(Qvalues);
+	for(let i = 0; i < Qvalues.length; i++){
+		for(let j = 0; j < Qvalues[i].length; j++){
+			for(let k = 0; k < 4; k++){
+				id = "action" + directionMap(k) + i + "_" + j;
+				if(Qvalues[i][j][k] < 0){
+					setColor(id, RedValue(Qvalues[i][j][k]));
+				} else {
+					setColor(id, GreenValue(Qvalues[i][j][k]));
+				}
+			}
+		}
+	}
+}
+
+function refreshPitch(pitchData){
+	var oldMaxQ = maxQ;
+	var oldMinQ = minQ;
+
+	if(!maxQ && pitchData.length !== 0){ maxQ = Number(pitchData[0].Qvalues[0]); };
+	if(!minQ && pitchData.length !== 0){ minQ = Number(pitchData[0].Qvalues[0]); };
 
 	for(let i = 0; i < pitchData.length; i++){
 		for(let j = 0; j < pitchData[i].Qvalues.length; j++){
-			if(pitchData[i].Qvalues[j] > maxQ){ maxQ = pitchData[i].Qvalues[j]; }
-			if(pitchData[i].Qvalues[j] > maxQ){ minQ = pitchData[i].Qvalues[j]; }
+			if(Number(pitchData[i].Qvalues[j]) > maxQ){ maxQ = Number(pitchData[i].Qvalues[j]); }
+			if(Number(pitchData[i].Qvalues[j]) < minQ){ minQ = Number(pitchData[i].Qvalues[j]); }
 		}
 	}
+
+	if(oldMaxQ !== maxQ || oldMinQ !== minQ){ rescaleQcolor(); }
 
 	for(let i = 0; i < pitchData.length; i++){
 		var id = "pTD" + pitchData[i].x + "_" + pitchData[i].y;
-		setColor(id, getTypeColor(pitchData[i].type));
+		setTypeClass(id, getTypeClass(pitchData[i].type));
 
 		for(let j = 0; j < pitchData[i].Qvalues.length; j++){
-			id = "action" + directionMap(j) + pitchData[i].x + "_" + pitchData[i].y;
-			setColor(id, GreenValue(pitchData[i].Qvalues[j]));
+			//id = "action" + directionMap(j) + pitchData[i].x + "_" + pitchData[i].y;
+
+			Qvalues[pitchData[i].x][pitchData[i].y] = pitchData[i].Qvalues;
+
+			refreshQvalues();
+			//setColor(id, GreenValue(pitchData[i].Qvalues[j]));
 		}
 	}
+
+	/*console.log("Q-s")
+	console.log(Qvalues);*/
 }
 
 function queryNext(onSuccess){
@@ -228,6 +291,8 @@ function queryNext(onSuccess){
 }
 
 function startLearning(){
+	Qvalues = [];
+
 	var nextValue;
 		running = true;
 		data = readData();
@@ -285,4 +350,5 @@ function stopLearning(){
 
 $(document).ready(function(){
 	resizePitch();
+					console.log(type);console.log(Qvalues);
 });

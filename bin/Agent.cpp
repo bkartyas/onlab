@@ -6,12 +6,15 @@ using namespace std;
 
 Knowledge::Knowledge(const int &x, const int &y, const int &action): x(x), y(y), action(action){
 	thoughts = new double**[x];
+
+	srand(time(NULL));
 	for (int i = 0; i < x; i++) {
 		thoughts[i] = new double*[y];
 		for (int j = 0; j < y; j++) {
 			thoughts[i][j] = new double[action];
 			for(int k = 0; k < action; k++){
-                thoughts[i][j][k] = 0.0;
+				//thoughts[i][j][k] = rand() % 100;
+					thoughts[i][j][k] = 0.0;
 			}
         }
 	}
