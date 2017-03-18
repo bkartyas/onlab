@@ -145,6 +145,12 @@ function createResponse(){
 app.get("/next", function(req, res){
 	log("request:\t/next");
 
+	if(output.length < outputSize){
+		res.sendStatus(400);
+		res.end();
+		return;
+	}
+
 	if(!outputEnd || output.length !== 0){
 		/*log("EZ KŐŐŐŐŐŐ!!!!!!!!!!!!!", output)
 		log("meg ez!!!!!!!!!!!!!", outputEnd)*/

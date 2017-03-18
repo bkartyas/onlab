@@ -63,6 +63,7 @@ function actionType(x, y){
 function createTableData(x, y){
 	let newTD = document.createElement("td");
 	newTD.classList.add("platform");
+	newTD.classList.add("emptyPlatform");
 	newTD.id = "pTD" + x + "_" + y;
 
 	if(!running){
@@ -122,48 +123,57 @@ function createRewardInput(){
 	return newTable;
 }*/
 
+function hasClass(element, cls) {
+    return (' ' + element.className + ' ').indexOf(' ' + cls + ' ') > -1;
+}
+
 function stepStatus(tableData){
 	var parsedID = tableData.id.split("pTD")[1].split("_");
 	var x = parsedID[0];
 	var y = parsedID[1];
 
-	switch(tableData.style.backgroundColor){
-	case "white":
-		tableData.style.backgroundColor = "black";
-		type[y][x] = "W";
-		break;
-	case "black":
-		//tableData.classList.add("agent");
-		tableData.style.backgroundColor = "blue";
-		type[y][x] = "A";
-		break;
-	case "blue":
-		tableData.style.backgroundColor = "yellow";
-		type[y][x] = "E";
-		break;
-	case "yellow":
-		tableData.style.backgroundColor = "white";
-		type[y][x] = "P";
-		break;
-	default:
-		tableData.style.backgroundColor = "white";
-		type[y][x] = "P";
+	if(hasClass(tableData, "emptyPlatform")){
+		tableData.classList.remove("emptyPlatform");
+	  	tableData.classList.add("wall");
+	  	type[y][x] = "W";
+	} else if(hasClass(tableData, "wall")){
+		tableData.classList.remove("wall");
+	  	tableData.classList.add("agent");
+	  	type[y][x] = "A";
+	} else if(hasClass(tableData, "agent")){
+		tableData.classList.remove("agent");
+	  	tableData.classList.add("finish");
+	  	type[y][x] = "E";
+	} else if(hasClass(tableData, "finish")){
+		tableData.classList.remove("finish");
+	  	tableData.classList.add("emptyPlatform");
+	  	type[y][x] = "P";
 	}
 }
 
-function getTypeColor(type){
+function setTypeClass(id, typeClass){
+	var element = document.getElementById(id);
+	element.classList.remove("emptyPlatform");
+	element.classList.remove("wall");
+	element.classList.remove("agent");
+	element.classList.remove("finish");
+	element.classList.add(typeClass);
+}
+
+
+function getTypeClass(type){
 	switch(type){
 	case "P":
-		return "white";
+		return "emptyPlatform";
 		break;
 	case "W":
-		return "black";
+		return "wall";
 		break;
 	case "A":
-		return "blue";
+		return "agent";
 		break;
 	case "E":
-		return "yellow";
+		return "finish";
 		break;
 	}
 }
@@ -257,7 +267,7 @@ function refreshPitch(pitchData){
 
 	for(let i = 0; i < pitchData.length; i++){
 		var id = "pTD" + pitchData[i].x + "_" + pitchData[i].y;
-		setColor(id, getTypeColor(pitchData[i].type));
+		setTypeClass(id, getTypeClass(pitchData[i].type));
 
 		for(let j = 0; j < pitchData[i].Qvalues.length; j++){
 			//id = "action" + directionMap(j) + pitchData[i].x + "_" + pitchData[i].y;
