@@ -1,6 +1,7 @@
 #ifndef AGENT_H_INCLUDED
 #define AGENT_H_INCLUDED
 
+#include <functional>
 #include "Platform.h"
 #include "Vec2.h"
 
@@ -17,6 +18,7 @@ class Knowledge{
 	friend Agent;
 public:
 	Knowledge(const int &x, const int &y, const int &action);
+	void randomize(const double max);
 
 	~Knowledge();
 
@@ -26,15 +28,19 @@ public:
 ostream& operator<<(ostream& os, const Knowledge &knowledge);
 
 class Agent {
+	int epoch;
+	double alpha, gamma;
 	Knowledge knowledge;
 	Platform* platform;
 	Platform* start;
 	Platform* finish;
 
 public:
-	Agent(const int &x, const int &y, Platform *start);
+	Agent(const int &x, const int &y, Platform *start, const int &epoch, const double &alpha, const double &gamma);
 
-    void learn(const double& alpha, const double& gamma);
+	void randomizeQ(const double max);
+	void learn(function<void()> callAfterStep);
+	void learnStep();
 
     void setEnd(Platform *platform);
 

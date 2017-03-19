@@ -1,3 +1,4 @@
+#include <functional>
 #include <stdlib.h>
 #include <time.h>
 #include "Agent.h"
@@ -19,6 +20,18 @@ Knowledge::Knowledge(const int &x, const int &y, const int &action): x(x), y(y),
         }
 	}
 }
+
+void Knowledge::randomize(const double max) {
+	int about = (int) max / 10;
+	if (about == 0) { about = 1; }
+	for (int i = 0; i < x; i++) {
+		for (int j = 0; j < y; j++) {
+			for (int k = 0; k < action; k++) {
+				thoughts[i][j][k] += rand() % (about * 2) - about;
+			}
+		}
+	}
+};
 
 Knowledge::~Knowledge() {
 	for (int i = 0; i < x; i++) {
@@ -50,58 +63,77 @@ ostream& operator<<(ostream & os, const Knowledge &knowledge) {
 }
 
 
-Agent::Agent(const int &x, const int &y, Platform *start) : knowledge(x, y, 4), start(start), platform(start) {
-    start->step(this);
+Agent::Agent(const int &x, const int &y, Platform *start, const int &epoch, const double &alpha, const double &gamma):
+				knowledge(x, y, 4), start(start), platform(start), epoch(epoch), alpha(alpha), gamma(gamma){
+	srand(time(NULL));
+	start->step(this);
 }
 
-void Agent::learn(const double& alpha, const double& gamma){
-    if(platform == finish){
-        start->step(this);
-        platform->step(nullptr);
-        platform = start;
-        return;
-    }
-
-    Vec2 pos = platform->getPosition();
-    srand(time(NULL));
-    int direction = stepLeft;
-    for(int i = 1; i <= 3; i = i+1){
-        if(knowledge.thoughts[pos.x][pos.y][direction] < knowledge.thoughts[pos.x][pos.y][i] ||
-            (knowledge.thoughts[pos.x][pos.y][direction] == knowledge.thoughts[pos.x][pos.y][i] && rand() % 2 - 1)){
-            direction = i;
-        }
-    }
-
-    Direction dir;
-    switch(direction){
-    case stepLeft:
-        dir = Direction::left;
-        break;
-    case stepUp:
-        dir = Direction::up;
-        break;
-    case stepRight:
-        dir = Direction::right;
-        break;
-    case stepDown:
-        dir = Direction::down;
-
-        break;
-    }
-
-    double reward = step(dir);
-
-    Vec2 newPos = platform->getPosition();
-    int newMax = 0;
-    for(int i = 1; i <= 3; i = i+1){
-        if(knowledge.thoughts[newPos.x][newPos.y][newMax] < knowledge.thoughts[newPos.x][newPos.y][i]||
-            (knowledge.thoughts[pos.x][pos.y][newMax] == knowledge.thoughts[pos.x][pos.y][newMax] && rand() % 2 - 1)){
-            newMax = i;
-        }
-    }
-
-    knowledge.thoughts[pos.x][pos.y][direction] += alpha * (reward + gamma * knowledge.thoughts[newPos.x][newPos.y][newMax] - knowledge.thoughts[pos.x][pos.y][direction]);
+void Agent::randomizeQ(const double max) {
+	knowledge.randomize(max);
 };
+
+void Agent::learn(function<void()> callAfterStep){
+	while (epoch > 0) {
+		if (platform == finish) {
+			start->step(this);
+			platform->step(nullptr);
+			platform = start;
+			epoch--;
+		} else {
+			learnStep();
+		}
+		/*double d;
+		cin >> d; cout << d;*/
+		callAfterStep();
+	}
+};
+
+void Agent::learnStep() {
+	Vec2 pos = platform->getPosition();
+	
+	int direction = stepLeft;
+	if (rand() % 4 - 1) {
+		for (int i = 1; i <= 3; i = i + 1) {
+			if (knowledge.thoughts[pos.x][pos.y][direction] < knowledge.thoughts[pos.x][pos.y][i] ||
+				(knowledge.thoughts[pos.x][pos.y][direction] == knowledge.thoughts[pos.x][pos.y][i] && rand() % 2 - 1)) {
+				direction = i;
+			}
+		}
+	} else {	
+		direction = (int) (rand() % 4);
+	}
+
+	Direction dir;
+	switch (direction) {
+	case stepLeft:
+		dir = Direction::left;
+		break;
+	case stepUp:
+		dir = Direction::up;
+		break;
+	case stepRight:
+		dir = Direction::right;
+		break;
+	case stepDown:
+		dir = Direction::down;
+
+		break;
+	}
+
+	double reward = step(dir);
+
+	Vec2 newPos = platform->getPosition();
+	int newMax = 0;
+	for (int i = 1; i <= 3; i = i + 1) {
+		if (knowledge.thoughts[newPos.x][newPos.y][newMax] < knowledge.thoughts[newPos.x][newPos.y][i] ||
+			(knowledge.thoughts[pos.x][pos.y][newMax] == knowledge.thoughts[pos.x][pos.y][newMax] && rand() % 2 - 1)) {
+			newMax = i;
+		}
+	}
+
+	knowledge.thoughts[pos.x][pos.y][direction] += alpha * (reward + gamma * knowledge.thoughts[newPos.x][newPos.y][newMax] - knowledge.thoughts[pos.x][pos.y][direction]);
+}
 
 void Agent::setEnd(Platform *platform) {
     finish = platform;

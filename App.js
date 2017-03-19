@@ -74,6 +74,8 @@ app.post('/start', function(req, res){
 	});
 
 	res.sendStatus(200);
+	res.end();
+	return;
 })
 
 app.get('/stop', function(req, res){
@@ -98,19 +100,18 @@ function createOutput(){
 }
 
 function createResponse(){
-	if(output.length < outputSize){
+	/*if(output.length < outputSize){
 		var promise = new Promise(function(resolve, reject) {
 	    	setTimeout(function() {
 	       		resolve(createResponse());
 	     	}, 25);
 	   });
 	   return promise;
-	}
+	}*/
 	var myOut = { "pitch": []};;
 
 	if(!outBefore){
 			outBefore = createOutput();
-			log('Out:', outBefore);
 			for(let i = 0; i < outputSize; i++){
 				for(let j = 0; j < fields.length-1; j++){
 					let values = outBefore.pitch[i][j].split(',');
@@ -123,7 +124,6 @@ function createResponse(){
 			}
 		} else {
 			out = createOutput();
-			log('Out:', out);
 			for(let i = 0; i < outputSize; i++){
 				for(let j = 0; j < fields.length-1; j++){
 					if(out.pitch[i][j] !== outBefore.pitch[i][j]){
@@ -145,23 +145,20 @@ function createResponse(){
 app.get("/next", function(req, res){
 	log("request:\t/next");
 
-	if(output.length < outputSize){
+	if(!outputEnd && output.length < outputSize){
 		res.sendStatus(400);
 		res.end();
 		return;
 	}
 
-	if(!outputEnd || output.length !== 0){
-		/*log("EZ KŐŐŐŐŐŐ!!!!!!!!!!!!!", output)
-		log("meg ez!!!!!!!!!!!!!", outputEnd)*/
-
+	if(!outputEnd || output.length >= outputSize){
 		myOut = createResponse();
 	} else {
 		myOut.status = 'end';
 	}
 
-	/*log('Output:', outBefore);
-	log('Response:', myOut);*/
+	log('Output:', outBefore);
+	log('Response:', myOut);
 	res.json(myOut);
 	res.end();
 });

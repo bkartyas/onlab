@@ -38,19 +38,25 @@ Pitch::~Pitch() {
 Agent* Pitch::initialize(){
     Platform* finish = nullptr;
     PlatformFactory pf;
-
+	double epoch, alpha, gamma;
+	cin >> epoch >> alpha >> gamma;
+	
+	double maxRe = 0;
 	for (int i = 0; i < x; i++) {
 		for (int j = 0; j < y; j++) {
 			string input; cin >> input;
 			vector<string> settings = split(input, ',');
 			char *a;
-			pitch[i][j] = pf.create(Vec2(i, j), settings[0][0], strtod(settings[1].c_str(), &a));
+			double reward = strtod(settings[1].c_str(), &a);
+			pitch[i][j] = pf.create(Vec2(i, j), settings[0][0], reward);
 			if(settings[0][0] == 'E'){ finish = pitch[i][j]; } else
-            if(settings[0][0] == 'A'){ agents = new Agent(x, y, pitch[i][j]); }
+            if(settings[0][0] == 'A'){ agents = new Agent(x, y, pitch[i][j], epoch, alpha, gamma); }
+			if (reward > maxRe) { maxRe = reward; }
         }
 	}
 
 	if (agents && finish) {
+		agents->randomizeQ(maxRe);
 		agents->setEnd(finish);
 	}
 	link();

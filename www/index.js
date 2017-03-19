@@ -5,6 +5,21 @@ var minQ;
 var intervalID;
 var running = false;
 
+function initialize(){
+	type =  [];
+	Qvalues =  [];
+	maxQ = null;
+	minQ = null;
+	intervalID = null;
+	running = false;
+
+	startButton.innerHTML = "Start";
+	startButton.classList.remove("btn-warning");
+  	startButton.classList.add("btn-success");
+  	startButton.onclick = startLearning;
+}
+
+
 function readData(){
 	var x = sizeX.value;
 	var y = sizeY.value;
@@ -30,6 +45,7 @@ function readData(){
 
 function resizePitch(){
 	type = [];
+	Qvalues = [];
 	var x = sizeX.value;
 	var y = sizeY.value;
 
@@ -87,11 +103,6 @@ function createTableData(x, y){
 			newTable.appendChild(newTRin);
 		}
 		newTD.appendChild(newTable);
-
-		startButton.innerHTML = "Stop";
-		startButton.classList.remove("btn-success");
-  		startButton.classList.add("btn-warning");
-  		startButton.onclick = stopLearning;
   	}
 
     //newTD.style.backgroundImage = "url('http://clipart-library.com/image_gallery/145213.jpg')";
@@ -215,22 +226,16 @@ function rescaleQcolor(){
 
 function GreenValue(value){
 	var rb;
-	if(value === maxQ){
-		rb = 255;
-	} else {
-		rb = ((1 - maxQ/value) * 255);
-	}
-	return 'rgb(' + rb + ',255,' + rb + ')';
+	rb = Math.round((1 - value/maxQ) * 255);
+	a = value/maxQ;
+	return 'rgba(' + rb + ',255,' + rb + ',' + a + ')';
 }
 
 function RedValue(value){
 	var gb;
-	if(value === minQ){
-		gb = 255;
-	} else {
-		gb = ((1 - (minQ)/(minQ - value)) * 255);
-	}
-	return 'rgb(255,' + gb + ',' + gb + ')';
+	gb = Math.round((1 - value/minQ) * 255);
+	a = value/minQ;
+	return 'rgba(255,' + gb + ',' + gb + ',' + a + ')';
 }
 
 function refreshQvalues(){
@@ -268,17 +273,13 @@ function refreshPitch(pitchData){
 	for(let i = 0; i < pitchData.length; i++){
 		var id = "pTD" + pitchData[i].x + "_" + pitchData[i].y;
 		setTypeClass(id, getTypeClass(pitchData[i].type));
-
-		for(let j = 0; j < pitchData[i].Qvalues.length; j++){
 			//id = "action" + directionMap(j) + pitchData[i].x + "_" + pitchData[i].y;
+		Qvalues[pitchData[i].x][pitchData[i].y] = pitchData[i].Qvalues.map( function(item) { return Number(item); } );
 
-			Qvalues[pitchData[i].x][pitchData[i].y] = pitchData[i].Qvalues;
-
-			refreshQvalues();
 			//setColor(id, GreenValue(pitchData[i].Qvalues[j]));
-		}
 	}
 
+	refreshQvalues();
 	/*console.log("Q-s")
 	console.log(Qvalues);*/
 }
@@ -296,43 +297,38 @@ function queryNext(onSuccess){
 }
 
 function startLearning(){
-	Qvalues = [];
+	data = readData();
+	//console.log(data);
+	$.ajax({
+		method:   'POST',
+		url: 	  '/start',
+		data: 	  data,
+		dataType: 'json',
+		async: 	false,
+	});
 
-	var nextValue;
-		running = true;
-		data = readData();
-		console.log(data);
-		$.ajax({
-			method:   'POST',
-			url: 	  '/start',
-			data: 	  data,
-			dataType: 'json',
-			async: 	false
-		});
+	running = true;
+	resizePitch();
+	startButton.innerHTML = "Stop";
+	startButton.classList.remove("btn-success");
+	startButton.classList.add("btn-warning");
+	startButton.onclick = stopLearning;
 
-		queryNext(function(res){
-				resizePitch();
-				console.log(res);
-				if(res['status'] === 'end'){
-					running = false;
-				} else {
-					refreshPitch(res.pitch);
-				}
-			}
-		)
-
+	if(running){
 		intervalID = setInterval(function(){
 			queryNext(function(response){
-						console.log(response);
+						//console.log(response);
 						if(response['status'] === 'end'){
 							clearInterval(intervalID);
-							running = false;
 						} else {
 							refreshPitch(response.pitch);
 						}
 					}
 			)}, Number(speed.value)
 		);
+	} else {
+		initialize();
+	}
 }
 
 function stopLearning(){
@@ -342,18 +338,14 @@ function stopLearning(){
 			method: 'GET',
 			url: '/stop',
 			dataType: 'json',
-            contentType: "application/json; charset=utf-8"
+           	contentType: "application/json; charset=utf-8",
+           	async: 	false
 	})
 
-	running = false;
+	initialize();
 	resizePitch();
-	startButton.innerHTML = "Start";
-	startButton.classList.remove("btn-warning");
-  	startButton.classList.add("btn-success");
-  	startButton.onclick = startLearning;
 }
 
 $(document).ready(function(){
 	resizePitch();
-					console.log(type);console.log(Qvalues);
 });
