@@ -115,11 +115,11 @@ function createResponse(){
 			for(let i = 0; i < outputSize; i++){
 				for(let j = 0; j < fields.length-1; j++){
 					let values = outBefore.pitch[i][j].split(',');
-					myOut.pitch.push({ "x": 	  j,
-									   "y": 	  i,
+					myOut.pitch.push({ "x": 	  Number(j),
+									   "y": 	  Number(i),
 									   "type": 	  values[0],
-									   "reward":  values[1],
-									   "Qvalues": values.slice(2, 6)});
+									   "reward":  Number(values[1]),
+									   "Qvalues": values.slice(2, 6).map( function(item) { return Number(item); } )});
 				};
 			}
 		} else {
@@ -128,11 +128,11 @@ function createResponse(){
 				for(let j = 0; j < fields.length-1; j++){
 					if(out.pitch[i][j] !== outBefore.pitch[i][j]){
 						let values = out.pitch[i][j].split(',');
-						myOut.pitch.push({ "x": 	  j,
-										   "y": 	  i,
+						myOut.pitch.push({ "x": 	  Number(j),
+										   "y": 	  Number(i),
 										   "type": 	  values[0],
-										   "reward":  values[1],
-										   "Qvalues": values.slice(2, 6)});
+										   "reward":  Number(values[1]),
+										   "Qvalues": values.slice(2, 6).map( function(item) { return Number(item); } )});
 						outBefore.pitch[i][j] = out.pitch[i][j];
 					}
 				}

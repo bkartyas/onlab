@@ -258,13 +258,13 @@ function refreshPitch(pitchData){
 	var oldMaxQ = maxQ;
 	var oldMinQ = minQ;
 
-	if(!maxQ && pitchData.length !== 0){ maxQ = Number(pitchData[0].Qvalues[0]); };
-	if(!minQ && pitchData.length !== 0){ minQ = Number(pitchData[0].Qvalues[0]); };
+	if(!maxQ && pitchData.length !== 0){ maxQ = pitchData[0].Qvalues[0]; };
+	if(!minQ && pitchData.length !== 0){ minQ = pitchData[0].Qvalues[0]; };
 
 	for(let i = 0; i < pitchData.length; i++){
 		for(let j = 0; j < pitchData[i].Qvalues.length; j++){
-			if(Number(pitchData[i].Qvalues[j]) > maxQ){ maxQ = Number(pitchData[i].Qvalues[j]); }
-			if(Number(pitchData[i].Qvalues[j]) < minQ){ minQ = Number(pitchData[i].Qvalues[j]); }
+			if(pitchData[i].Qvalues[j] > maxQ){ maxQ = pitchData[i].Qvalues[j]; }
+			if(pitchData[i].Qvalues[j] < minQ){ minQ = pitchData[i].Qvalues[j]; }
 		}
 	}
 
@@ -274,7 +274,7 @@ function refreshPitch(pitchData){
 		var id = "pTD" + pitchData[i].x + "_" + pitchData[i].y;
 		setTypeClass(id, getTypeClass(pitchData[i].type));
 			//id = "action" + directionMap(j) + pitchData[i].x + "_" + pitchData[i].y;
-		Qvalues[pitchData[i].x][pitchData[i].y] = pitchData[i].Qvalues.map( function(item) { return Number(item); } );
+		Qvalues[pitchData[i].x][pitchData[i].y] = pitchData[i].Qvalues;
 
 			//setColor(id, GreenValue(pitchData[i].Qvalues[j]));
 	}
@@ -291,6 +291,7 @@ function queryNext(onSuccess){
 			dataType: 'json',
             contentType: "application/json; charset=utf-8",
 			success: function(response){
+						console.log(response);
 						onSuccess(response);
 					}
 	})

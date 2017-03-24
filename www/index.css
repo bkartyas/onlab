@@ -21,6 +21,8 @@
 }
 
 .pitch .platform {
+	width: 125px;
+	height: 125px;
 	background-color: white;
 	vertical-align: middle;
 	padding: 0px;
