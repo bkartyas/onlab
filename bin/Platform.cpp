@@ -46,9 +46,9 @@ bool NormalPlatform::step(Agent *agent){
 
 void NormalPlatform::draw(ostream &os) const {
 	if(!agent){
-        cout << "P," << (reward);
+        os << "P," << (reward);
 	} else {
-        cout << "A," << (reward);
+		agent->draw(os);
 	}
 }
 
@@ -60,7 +60,7 @@ bool WallPlatform::step(Agent *agent){
 }
 
 void WallPlatform::draw(ostream &os) const {
-	cout << "W," << reward;
+	os << "W," << reward;
 }
 
 

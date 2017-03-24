@@ -1,7 +1,11 @@
 #include <iostream>
+#include <functional>
 #include <string>
+#include <map>
+#include <utility>
 #include <stdlib.h>
 #include "Pitch.h"
+#include "Vec2.h"
 #include "Platform.h"
 
 using namespace std;
@@ -35,10 +39,12 @@ Pitch::~Pitch() {
 	delete pitch;
 }
 
-Agent* Pitch::initialize(){
-    Platform* finish = nullptr;
+vector<Agent*> Pitch::initialize(){
+	map<string, pair<Agent*, Platform*>> agent_end;
+	Platform* finish = nullptr;
     PlatformFactory pf;
-	double epoch, alpha, gamma;
+	int epoch;
+	double alpha, gamma;
 	cin >> epoch >> alpha >> gamma;
 	
 	double maxRe = 0;
@@ -46,23 +52,47 @@ Agent* Pitch::initialize(){
 		for (int j = 0; j < y; j++) {
 			string input; cin >> input;
 			vector<string> settings = split(input, ',');
+			string id = settings[0].substr(1, settings[0].size() - 1);
 			char *a;
 			double reward = strtod(settings[1].c_str(), &a);
+
 			pitch[i][j] = pf.create(Vec2(i, j), settings[0][0], reward);
-			if(settings[0][0] == 'E'){ finish = pitch[i][j]; } else
-            if(settings[0][0] == 'A'){ agents = new Agent(x, y, pitch[i][j], epoch, alpha, gamma); }
+			if(settings[0][0] == 'E'){ 
+				agent_end[id].second = pitch[i][j]; 
+			} else if(settings[0][0] == 'A'){ 
+				agent_end[id].first = new Agent(id, x, y, pitch[i][j], epoch, alpha, gamma); 
+			}
 			if (reward > maxRe) { maxRe = reward; }
         }
 	}
-
-	if (agents && finish) {
-		agents->randomizeQ(maxRe);
-		agents->setEnd(finish);
+	
+	for (auto const &agent_end_pair : agent_end) {
+		auto without_id = agent_end_pair.second;
+		agents.push_back(without_id.first);
+		if (without_id.first && without_id.second) {
+			without_id.first->setEnd(without_id.second); 
+			without_id.first->randomizeQ(maxRe);
+		}
 	}
+	
 	link();
 
 	return agents;
-};
+}
+
+void Pitch::learn(function<void()> callAfterStep) {
+	bool end = false;
+	while (!end) {
+		end = true;
+		for (int i = 0; i < agents.size(); i++) {
+			if (agents[i]->learn()) {
+				cout << *this << endl;
+				end = false;
+				callAfterStep();
+			}
+		}
+	}
+}
 
 void Pitch::link() {
 	for (int i = 0; i < x; i++) {
@@ -83,14 +113,6 @@ void Pitch::link() {
 	}
 }
 
-Platform** Pitch::operator[](const int &x) {
-	return pitch[x];
-};
-
-Agent* Pitch::getAgents(){
-	return agents;
-}
-
 Vec2 Pitch::getSize() const {
 	return Vec2(x, y);
 }
@@ -100,11 +122,15 @@ void Pitch::draw(ostream &os) const {
 		for (int j = 0; j < y; j++) {
 			pitch[i][j]->draw(os);
 			os << ',';
-			agents->draw(os, i, j);
+			agents[0]->draw(os, i, j);
 			os << ' ';
 		}
 		os << endl;
 	}
+}
+
+Platform** Pitch::operator[](const int &x) {
+	return pitch[x];
 }
 
 ostream & operator<<(ostream & os, const Pitch &pitch) {

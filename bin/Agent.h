@@ -1,7 +1,6 @@
 #ifndef AGENT_H_INCLUDED
 #define AGENT_H_INCLUDED
 
-#include <functional>
 #include "Platform.h"
 #include "Vec2.h"
 
@@ -28,6 +27,7 @@ public:
 ostream& operator<<(ostream& os, const Knowledge &knowledge);
 
 class Agent {
+	string id;
 	int epoch;
 	double alpha, gamma;
 	Knowledge knowledge;
@@ -36,10 +36,10 @@ class Agent {
 	Platform* finish;
 
 public:
-	Agent(const int &x, const int &y, Platform *start, const int &epoch, const double &alpha, const double &gamma);
+	Agent(const string &id, const int &x, const int &y, Platform *start, const int &epoch, const double &alpha, const double &gamma);
 
 	void randomizeQ(const double max);
-	void learn(function<void()> callAfterStep);
+	bool learn();
 	void learnStep();
 
     void setEnd(Platform *platform);
@@ -48,6 +48,7 @@ public:
 	double step(const Direction &dir);
 
 	ostream& draw(ostream &os, const int &i, const int &j) const;
+	ostream& draw(ostream &os) const;
 };
 
 #endif // AGENT_H_INCLUDED

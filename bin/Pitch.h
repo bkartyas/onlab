@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <vector>
+#include <functional>
 #include "Vec2.h"
 #include "Platform.h"
 #include "Agent.h"
@@ -12,7 +13,7 @@ using namespace std;
 class Pitch {
 	int x, y;
 	Platform*** pitch;
-	Agent* agents;
+	vector<Agent*> agents;
 
 	void link();
 
@@ -20,12 +21,12 @@ public:
 	Pitch(const int &x, const int &y);
 	~Pitch();
 
-	Agent* initialize();
+	vector<Agent*> initialize();
 
+	void learn(function<void()> callAfterStep);
 
 	Platform** operator[](const int &x);
 
-	Agent* getAgents();
 	Vec2 getSize() const;
 
 	void draw(ostream &os) const;

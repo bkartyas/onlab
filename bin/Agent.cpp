@@ -1,20 +1,34 @@
 #include <functional>
-#include <stdlib.h>
-#include <time.h>
+#include <string>
 #include "Agent.h"
 
 using namespace std;
 
+static unsigned long x = 123456789, y = 362436069, z = 521288629;
+
+unsigned long xorshf96(void) {          //period 2^96-1
+	unsigned long t;
+	x ^= x << 16;
+	x ^= x >> 5;
+	x ^= x << 1;
+
+	t = x;
+	x = y;
+	y = z;
+	z = t ^ x ^ y;
+
+	return z;
+}
+
+
 Knowledge::Knowledge(const int &x, const int &y, const int &action): x(x), y(y), action(action){
 	thoughts = new double**[x];
 
-	srand(time(NULL));
 	for (int i = 0; i < x; i++) {
 		thoughts[i] = new double*[y];
 		for (int j = 0; j < y; j++) {
 			thoughts[i][j] = new double[action];
 			for(int k = 0; k < action; k++){
-				//thoughts[i][j][k] = rand() % 100;
 					thoughts[i][j][k] = 0.0;
 			}
         }
@@ -27,7 +41,7 @@ void Knowledge::randomize(const double max) {
 	for (int i = 0; i < x; i++) {
 		for (int j = 0; j < y; j++) {
 			for (int k = 0; k < action; k++) {
-				thoughts[i][j][k] += rand() % (about * 2) - about;
+				thoughts[i][j][k] += (int)(xorshf96() % about * 2) - about;
 			}
 		}
 	}
@@ -63,9 +77,8 @@ ostream& operator<<(ostream & os, const Knowledge &knowledge) {
 }
 
 
-Agent::Agent(const int &x, const int &y, Platform *start, const int &epoch, const double &alpha, const double &gamma):
-				knowledge(x, y, 4), start(start), platform(start), epoch(epoch), alpha(alpha), gamma(gamma){
-	srand(time(NULL));
+Agent::Agent(const string &id, const int &x, const int &y, Platform *start, const int &epoch, const double &alpha, const double &gamma):
+				id(id), knowledge(x, y, 4), start(start), platform(start), epoch(epoch), alpha(alpha), gamma(gamma){
 	start->step(this);
 }
 
@@ -73,8 +86,8 @@ void Agent::randomizeQ(const double max) {
 	knowledge.randomize(max);
 };
 
-void Agent::learn(function<void()> callAfterStep){
-	while (epoch > 0) {
+bool Agent::learn(){
+	if (epoch > 0) {
 		if (platform == finish) {
 			start->step(this);
 			platform->step(nullptr);
@@ -83,25 +96,25 @@ void Agent::learn(function<void()> callAfterStep){
 		} else {
 			learnStep();
 		}
-		/*double d;
-		cin >> d; cout << d;*/
-		callAfterStep();
+		return true;
 	}
+
+	return false;
 };
 
 void Agent::learnStep() {
 	Vec2 pos = platform->getPosition();
-	
+
 	int direction = stepLeft;
-	if (rand() % 4 - 1) {
+	if (((int)(xorshf96() % 10) - 4)) {
 		for (int i = 1; i <= 3; i = i + 1) {
 			if (knowledge.thoughts[pos.x][pos.y][direction] < knowledge.thoughts[pos.x][pos.y][i] ||
-				(knowledge.thoughts[pos.x][pos.y][direction] == knowledge.thoughts[pos.x][pos.y][i] && rand() % 2 - 1)) {
+				(knowledge.thoughts[pos.x][pos.y][direction] == knowledge.thoughts[pos.x][pos.y][i] && (int)(xorshf96() % 2))) {
 				direction = i;
 			}
 		}
-	} else {	
-		direction = (int) (rand() % 4);
+	} else {
+		direction = (int)(xorshf96() % 4);
 	}
 
 	Direction dir;
@@ -126,8 +139,7 @@ void Agent::learnStep() {
 	Vec2 newPos = platform->getPosition();
 	int newMax = 0;
 	for (int i = 1; i <= 3; i = i + 1) {
-		if (knowledge.thoughts[newPos.x][newPos.y][newMax] < knowledge.thoughts[newPos.x][newPos.y][i] ||
-			(knowledge.thoughts[pos.x][pos.y][newMax] == knowledge.thoughts[pos.x][pos.y][newMax] && rand() % 2 - 1)) {
+		if (knowledge.thoughts[newPos.x][newPos.y][newMax] < knowledge.thoughts[newPos.x][newPos.y][i]) {
 			newMax = i;
 		}
 	}
@@ -171,6 +183,12 @@ ostream& Agent::draw(ostream &os, const int &i, const int &j) const {
 			os << ",";
 		}
 	}
+
+	return os;
+}
+
+ostream& Agent::draw(ostream &os) const {
+	os << "A" << this->id;
 
 	return os;
 }

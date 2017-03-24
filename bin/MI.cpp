@@ -1,30 +1,25 @@
 #include <iostream>
-#include <string>
+#include <fstream>
 
-#include "Vec2.h"
-#include "Platform.h"
 #include "Pitch.h"
-#include "Agent.h"
 
 using namespace std;
 
 int main()
 {
 	cout << "start" << endl;
-
+	
 	int sizeX, sizeY;
 	cin >> sizeX >> sizeY;
 	Pitch pitch(sizeX, sizeY);
-	Agent* agent = pitch.initialize();
+	pitch.initialize();
 
 	cout << endl;
 	cout << pitch << endl;
 
-	agent->learn([&pitch]() { cout << pitch << endl; });
+	ofstream out("out.txt");
+	pitch.learn([&out, &pitch]() { out << pitch << endl; });
 
 	cout << "end";
-
-	/*double d;
-	cin >> d;
-	cout << d;*/
+	out.close();
 }
