@@ -18,7 +18,7 @@ int main()
 	cout << pitch << endl;
 
 	ofstream out("out.txt");
-	pitch.learn([&out, &pitch]() { out << pitch << endl; });
+	pitch.learn([&out, &pitch]() { out << pitch << endl; /*double d; cin >> d; cout << d;*/ });
 
 	cout << "end";
 	out.close();

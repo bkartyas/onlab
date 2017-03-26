@@ -1,5 +1,7 @@
 var type =  [];
 var Qvalues =  [];
+var ids =  { "A": [],
+			 "E": [] };
 var maxQ;
 var minQ;
 var intervalID;
@@ -8,6 +10,8 @@ var running = false;
 function initialize(){
 	type =  [];
 	Qvalues =  [];
+	ids =  { "A": [],
+			 "E": [] };
 	maxQ = null;
 	minQ = null;
 	intervalID = null;
@@ -138,6 +142,22 @@ function hasClass(element, cls) {
     return (' ' + element.className + ' ').indexOf(' ' + cls + ' ') > -1;
 }
 
+function getID(type){
+	var index = 0
+	if(type === "A"){
+		for(; ids[type][index] && index < ids[type].length; index++){}
+		ids[type][index] = index+1;
+	} else if(type === "E"){
+		for(; (ids[type][index] || !ids["A"][index]) && index < ids[type].length; index++){}
+		ids[type][index] = index+1;
+	}
+	return ids[type][index];
+}
+
+function removeID(type, position){
+	ids[type][position-1] = undefined;
+}
+
 function stepStatus(tableData){
 	var parsedID = tableData.id.split("pTD")[1].split("_");
 	var x = parsedID[0];
@@ -150,14 +170,16 @@ function stepStatus(tableData){
 	} else if(hasClass(tableData, "wall")){
 		tableData.classList.remove("wall");
 	  	tableData.classList.add("agent");
-	  	type[y][x] = "A";
+	  	type[y][x] = "A" + getID("A")
 	} else if(hasClass(tableData, "agent")){
 		tableData.classList.remove("agent");
 	  	tableData.classList.add("finish");
-	  	type[y][x] = "E";
+	  	removeID("A", Number(type[y][x].split("A")[1]));
+	  	type[y][x] = "E" + getID("E");
 	} else if(hasClass(tableData, "finish")){
 		tableData.classList.remove("finish");
 	  	tableData.classList.add("emptyPlatform");
+	  	removeID("E", Number(type[y][x].split("E")[1]));
 	  	type[y][x] = "P";
 	}
 }
@@ -243,7 +265,7 @@ function refreshQvalues(){
 	for(let i = 0; i < Qvalues.length; i++){
 		for(let j = 0; j < Qvalues[i].length; j++){
 			for(let k = 0; k < 4; k++){
-				id = "action" + directionMap(k) + i + "_" + j;
+				id = "action" + directionMap(k) + j + "_" + i;
 				if(Qvalues[i][j][k] < 0){
 					setColor(id, RedValue(Qvalues[i][j][k]));
 				} else {
@@ -272,9 +294,9 @@ function refreshPitch(pitchData){
 
 	for(let i = 0; i < pitchData.length; i++){
 		var id = "pTD" + pitchData[i].x + "_" + pitchData[i].y;
-		setTypeClass(id, getTypeClass(pitchData[i].type));
+		setTypeClass(id, getTypeClass(pitchData[i].type[0]));
 			//id = "action" + directionMap(j) + pitchData[i].x + "_" + pitchData[i].y;
-		Qvalues[pitchData[i].x][pitchData[i].y] = pitchData[i].Qvalues;
+		Qvalues[pitchData[i].y][pitchData[i].x] = pitchData[i].Qvalues;
 
 			//setColor(id, GreenValue(pitchData[i].Qvalues[j]));
 	}
@@ -318,7 +340,7 @@ function startLearning(){
 	if(running){
 		intervalID = setInterval(function(){
 			queryNext(function(response){
-						//console.log(response);
+						console.log(response);
 						if(response['status'] === 'end'){
 							clearInterval(intervalID);
 						} else {

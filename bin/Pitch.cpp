@@ -34,6 +34,10 @@ Pitch::Pitch(const int &x, const int &y): x(x), y(y) {
 }
 
 Pitch::~Pitch() {
+	for (int i = 0; i < agents.size(); i++) {
+		delete agents[i];
+	}
+	
 	for (int i = 0; i < x; i++) {
 		delete pitch[i];
 	}
@@ -73,7 +77,7 @@ vector<Agent*> Pitch::initialize(){
 		agents.push_back(agent_end_pair.first);
 		if (agent_end_pair.first && agent_end_pair.second.platform) {
 			agent_end_pair.first->setEnd(agent_end_pair.second);
-			agent_end_pair.first->randomizeQ(maxRe);
+			//agent_end_pair.first->randomizeQ(maxRe);
 		}
 	}
 	

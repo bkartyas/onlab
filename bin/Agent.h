@@ -42,6 +42,7 @@ public:
 	void randomizeQ(const double max);
 	bool learn();
 	void learnStep();
+	void stepNext();
 
     void setEnd(EndPlatform platform);
 

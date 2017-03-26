@@ -100,6 +100,15 @@ bool Agent::learn(){
 		return true;
 	}
 
+	if (platform == finish.platform) {
+		start->step(this);
+		platform->step(nullptr);
+		platform = start;
+		epoch--;
+	}
+
+	stepNext();
+
 	return false;
 };
 
@@ -134,6 +143,7 @@ void Agent::learnStep() {
 
 		break;
 	}
+	//cout << this->id << " " << direction ;
 
 	double reward = step(dir);
 	if (platform == finish.platform) { reward = finish.reward; }
@@ -146,7 +156,39 @@ void Agent::learnStep() {
 		}
 	}
 
+	
 	knowledge.thoughts[pos.x][pos.y][direction] += alpha * (reward + gamma * knowledge.thoughts[newPos.x][newPos.y][newMax] - knowledge.thoughts[pos.x][pos.y][direction]);
+}
+
+void Agent::stepNext() {
+	Vec2 pos = platform->getPosition();
+
+	int direction = stepLeft;
+	for (int i = 1; i <= 3; i = i + 1) {
+		if (knowledge.thoughts[pos.x][pos.y][direction] < knowledge.thoughts[pos.x][pos.y][i] ||
+			(knowledge.thoughts[pos.x][pos.y][direction] == knowledge.thoughts[pos.x][pos.y][i] && (int)(xorshf96() % 2))) {
+			direction = i;
+		}
+	}
+
+	Direction dir;
+	switch (direction) {
+	case stepLeft:
+		dir = Direction::left;
+		break;
+	case stepUp:
+		dir = Direction::up;
+		break;
+	case stepRight:
+		dir = Direction::right;
+		break;
+	case stepDown:
+		dir = Direction::down;
+
+		break;
+	}
+
+	step(dir);
 }
 
 void Agent::setEnd(EndPlatform platform) {
@@ -154,15 +196,21 @@ void Agent::setEnd(EndPlatform platform) {
     Vec2 pos = platform.platform->getPosition();
 
     for(int i = 0; i < 4; i++){
-        knowledge.thoughts[pos.x][pos.y][i] = platform.platform->getReward();
+        knowledge.thoughts[pos.x][pos.y][i] = platform.reward;
     }
 }
 
 double Agent::step(Platform *next){
-    if(next && next->step(this)){
-        platform->step(nullptr);
-        platform = next;
-        return platform->getReward();
+	if(next){
+		//next->draw(cout); cout << endl;
+
+		double reward = next->getReward();
+		if (next->step(this)) {
+			platform->step(nullptr);
+			platform = next;
+		}
+
+		return reward;
     }
     return -1000.0;
 }
@@ -170,15 +218,7 @@ double Agent::step(Platform *next){
 double Agent::step(const Direction &dir) {
     Platform* next = platform->inDirection(dir);
 
-    if(next){
-		if (next->step(this)) {
-			platform->step(nullptr);
-			platform = next;
-		}
-
-        return platform->getReward();
-    }
-    return -1000.0;
+    return step(next);
 }
 
 ostream& Agent::draw(ostream &os, const int &i, const int &j) const {
