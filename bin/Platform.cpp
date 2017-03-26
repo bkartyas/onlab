@@ -55,10 +55,11 @@ bool NormalPlatform::step(Agent *agent){
 
 void NormalPlatform::draw(ostream &os) const {
 	if(!agent){
-        os << "P," << (reward);
+        os << "P";
 	} else {
 		agent->draw(os);
 	}
+	os << "," << reward;
 }
 
 
