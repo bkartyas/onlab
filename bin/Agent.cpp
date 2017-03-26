@@ -1,6 +1,7 @@
 #include <functional>
 #include <string>
 #include "Agent.h"
+#include "EndPlatform.h"
 
 using namespace std;
 
@@ -88,7 +89,7 @@ void Agent::randomizeQ(const double max) {
 
 bool Agent::learn(){
 	if (epoch > 0) {
-		if (platform == finish) {
+		if (platform == finish.platform) {
 			start->step(this);
 			platform->step(nullptr);
 			platform = start;
@@ -135,6 +136,7 @@ void Agent::learnStep() {
 	}
 
 	double reward = step(dir);
+	if (platform == finish.platform) { reward = finish.reward; }
 
 	Vec2 newPos = platform->getPosition();
 	int newMax = 0;
@@ -147,12 +149,12 @@ void Agent::learnStep() {
 	knowledge.thoughts[pos.x][pos.y][direction] += alpha * (reward + gamma * knowledge.thoughts[newPos.x][newPos.y][newMax] - knowledge.thoughts[pos.x][pos.y][direction]);
 }
 
-void Agent::setEnd(Platform *platform) {
+void Agent::setEnd(EndPlatform platform) {
     finish = platform;
-    Vec2 pos = platform->getPosition();
+    Vec2 pos = platform.platform->getPosition();
 
     for(int i = 0; i < 4; i++){
-        knowledge.thoughts[pos.x][pos.y][i] = platform->getReward();
+        knowledge.thoughts[pos.x][pos.y][i] = platform.platform->getReward();
     }
 }
 
@@ -168,9 +170,12 @@ double Agent::step(Platform *next){
 double Agent::step(const Direction &dir) {
     Platform* next = platform->inDirection(dir);
 
-    if(next && next->step(this)){
-        platform->step(nullptr);
-        platform = next;
+    if(next){
+		if (next->step(this)) {
+			platform->step(nullptr);
+			platform = next;
+		}
+
         return platform->getReward();
     }
     return -1000.0;

@@ -7,6 +7,7 @@
 #include "Pitch.h"
 #include "Vec2.h"
 #include "Platform.h"
+#include "EndPlatform.h"
 
 using namespace std;
 
@@ -40,7 +41,7 @@ Pitch::~Pitch() {
 }
 
 vector<Agent*> Pitch::initialize(){
-	map<string, pair<Agent*, Platform*>> agent_end;
+	map<string, pair<Agent*, EndPlatform>> agent_end;
 	Platform* finish = nullptr;
     PlatformFactory pf;
 	int epoch;
@@ -58,7 +59,8 @@ vector<Agent*> Pitch::initialize(){
 
 			pitch[i][j] = pf.create(Vec2(i, j), settings[0][0], reward);
 			if(settings[0][0] == 'E'){ 
-				agent_end[id].second = pitch[i][j]; 
+				pitch[i][j]->setReward(-10.0);
+				agent_end[id].second = EndPlatform(pitch[i][j], reward);
 			} else if(settings[0][0] == 'A'){ 
 				agent_end[id].first = new Agent(id, x, y, pitch[i][j], epoch, alpha, gamma); 
 			}
@@ -66,12 +68,12 @@ vector<Agent*> Pitch::initialize(){
         }
 	}
 	
-	for (auto const &agent_end_pair : agent_end) {
-		auto without_id = agent_end_pair.second;
-		agents.push_back(without_id.first);
-		if (without_id.first && without_id.second) {
-			without_id.first->setEnd(without_id.second); 
-			without_id.first->randomizeQ(maxRe);
+	for (auto const &agent_end_pairs : agent_end) {
+		auto agent_end_pair = agent_end_pairs.second;
+		agents.push_back(agent_end_pair.first);
+		if (agent_end_pair.first && agent_end_pair.second.platform) {
+			agent_end_pair.first->setEnd(agent_end_pair.second);
+			agent_end_pair.first->randomizeQ(maxRe);
 		}
 	}
 	

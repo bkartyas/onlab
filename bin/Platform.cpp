@@ -6,6 +6,7 @@ using namespace std;
 Platform::Platform(const Vec2 &pos, const double &reward): reward(reward), position(pos) {}
 
 double Platform::getReward(){ return reward; };
+void Platform::setReward(const double& reward) { this->reward = reward; };
 
 Vec2 Platform::getPosition(){ return position; };
 
@@ -31,6 +32,14 @@ Platform* Platform::inDirection(const Direction &dir){
 
 
 NormalPlatform::NormalPlatform(const Vec2 &position, const double& reward): Platform(position, reward) {};
+
+double NormalPlatform::getReward() {
+	if (this->agent) {
+		return -1000;
+	}
+
+	return Platform::getReward();
+}
 
 bool NormalPlatform::step(Agent *agent){
     if(!agent){

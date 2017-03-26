@@ -2,6 +2,7 @@
 #define AGENT_H_INCLUDED
 
 #include "Platform.h"
+#include "EndPlatform.h"
 #include "Vec2.h"
 
 using namespace std;
@@ -33,7 +34,7 @@ class Agent {
 	Knowledge knowledge;
 	Platform* platform;
 	Platform* start;
-	Platform* finish;
+	EndPlatform finish;
 
 public:
 	Agent(const string &id, const int &x, const int &y, Platform *start, const int &epoch, const double &alpha, const double &gamma);
@@ -42,7 +43,7 @@ public:
 	bool learn();
 	void learnStep();
 
-    void setEnd(Platform *platform);
+    void setEnd(EndPlatform platform);
 
 	double step(Platform *next);
 	double step(const Direction &dir);

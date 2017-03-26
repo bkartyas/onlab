@@ -25,7 +25,8 @@ public:
 
 	Platform(const Vec2 &pos, const double &reward);
 
-    double getReward();
+    virtual double getReward();
+	void setReward(const double& reward);
 	Vec2 getPosition();
 
     Platform* inDirection(const Direction &dir);
@@ -41,6 +42,7 @@ class NormalPlatform : public Platform {
 public:
     NormalPlatform(const Vec2 &position, const double &reward);
 
+	double getReward();
 	bool step(Agent *agent);
 
 	virtual void draw(ostream &os) const;
