@@ -29,7 +29,7 @@ public:
 
 	Vec2 getSize() const;
 
-	void draw(ostream &os) const;
+	ostream& draw(ostream &os) const;
 };
 
 ostream & operator<<(ostream & os, const Pitch &pitch);

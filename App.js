@@ -119,7 +119,7 @@ function createResponse(){
 									   "y": 	  Number(i),
 									   "type": 	  values[0],
 									   "reward":  Number(values[1]),
-									   "Qvalues": values.slice(2, 6).map( function(item) { return Number(item); } )});
+									   "Qvalues": values.slice(2, values.length).map( function(item) { return Number(item); } )});
 				};
 			}
 		} else {
@@ -132,7 +132,7 @@ function createResponse(){
 										   "y": 	  Number(i),
 										   "type": 	  values[0],
 										   "reward":  Number(values[1]),
-										   "Qvalues": values.slice(2, 6).map( function(item) { return Number(item); } )});
+										   "Qvalues": values.slice(2, values.length).map( function(item) { return Number(item); } )});
 						outBefore.pitch[i][j] = out.pitch[i][j];
 					}
 				}

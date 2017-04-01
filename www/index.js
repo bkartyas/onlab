@@ -6,6 +6,7 @@ var maxQ;
 var minQ;
 var intervalID;
 var running = false;
+var offset = 0;
 
 function initialize(){
 	type =  [];
@@ -16,6 +17,11 @@ function initialize(){
 	minQ = null;
 	intervalID = null;
 	running = false;
+	offset = 0;
+
+	while (QAgents.childNodes.length > 3) {
+    	QAgents.removeChild(QAgents.lastChild);
+	}
 
 	startButton.innerHTML = "Start";
 	startButton.classList.remove("btn-warning");
@@ -158,6 +164,34 @@ function removeID(type, position){
 	ids[type][position-1] = undefined;
 }
 
+function agentsNumber(){
+	let i = 0;
+	for(agent in ids["A"]){
+		if(agent){ i++; }
+	}
+	return i;
+}
+
+function addRadio(){
+	var agentNum = agentsNumber();
+	var radio = document.createElement("input");
+	radio.type = "radio"; radio.name = "QAgent";
+	radio.addEventListener('click', function(){	offset = (agentNum-1) * 4; maxQ = null; minQ = null; });
+	radio.id = "Agent" + agentNum + "radio";
+	var label = document.createElement("label");
+	label.innerHTML = "Agent" + agentNum;
+	label.htmlFor = "Agent" + agentNum + "radio";
+	QAgents.appendChild(radio);
+	QAgents.appendChild(label);
+	QAgents.appendChild(document.createElement("br"));
+}
+
+function removeRadio(){
+	QAgents.removeChild(QAgents.lastElementChild);
+	QAgents.removeChild(QAgents.lastElementChild);
+	QAgents.removeChild(QAgents.lastElementChild);
+}
+
 function stepStatus(tableData){
 	var parsedID = tableData.id.split("pTD")[1].split("_");
 	var x = parsedID[0];
@@ -171,11 +205,13 @@ function stepStatus(tableData){
 		tableData.classList.remove("wall");
 	  	tableData.classList.add("agent");
 	  	type[y][x] = "A" + getID("A")
+	  	addRadio();
 	} else if(hasClass(tableData, "agent")){
 		tableData.classList.remove("agent");
 	  	tableData.classList.add("finish");
 	  	removeID("A", Number(type[y][x].split("A")[1]));
 	  	type[y][x] = "E" + getID("E");
+	  	removeRadio();
 	} else if(hasClass(tableData, "finish")){
 		tableData.classList.remove("finish");
 	  	tableData.classList.add("emptyPlatform");
@@ -266,10 +302,10 @@ function refreshQvalues(){
 		for(let j = 0; j < Qvalues[i].length; j++){
 			for(let k = 0; k < 4; k++){
 				id = "action" + directionMap(k) + j + "_" + i;
-				if(Qvalues[i][j][k] < 0){
-					setColor(id, RedValue(Qvalues[i][j][k]));
+				if(Qvalues[i][j][offset+k] < 0){
+					setColor(id, RedValue(Qvalues[i][j][offset+k]));
 				} else {
-					setColor(id, GreenValue(Qvalues[i][j][k]));
+					setColor(id, GreenValue(Qvalues[i][j][offset+k]));
 				}
 			}
 		}
@@ -280,11 +316,11 @@ function refreshPitch(pitchData){
 	var oldMaxQ = maxQ;
 	var oldMinQ = minQ;
 
-	if(!maxQ && pitchData.length !== 0){ maxQ = pitchData[0].Qvalues[0]; };
-	if(!minQ && pitchData.length !== 0){ minQ = pitchData[0].Qvalues[0]; };
+	if(!maxQ && pitchData.length !== 0){ maxQ = pitchData[0].Qvalues[offset]; };
+	if(!minQ && pitchData.length !== 0){ minQ = pitchData[0].Qvalues[offset]; };
 
 	for(let i = 0; i < pitchData.length; i++){
-		for(let j = 0; j < pitchData[i].Qvalues.length; j++){
+		for(let j = offset; j < offset+4; j++){
 			if(pitchData[i].Qvalues[j] > maxQ){ maxQ = pitchData[i].Qvalues[j]; }
 			if(pitchData[i].Qvalues[j] < minQ){ minQ = pitchData[i].Qvalues[j]; }
 		}
@@ -317,6 +353,22 @@ function queryNext(onSuccess){
 						onSuccess(response);
 					}
 	})
+}
+
+function changeSpeed(){
+	clearInterval(intervalID);
+
+	intervalID = setInterval(function(){
+		queryNext(function(response){
+				console.log(response);
+				if(response['status'] === 'end'){
+					clearInterval(intervalID);
+				} else {
+					refreshPitch(response.pitch);
+				}
+			}
+		)}, Number(speed.value)
+	);
 }
 
 function startLearning(){

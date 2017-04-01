@@ -123,16 +123,20 @@ Vec2 Pitch::getSize() const {
 	return Vec2(x, y);
 }
 
-void Pitch::draw(ostream &os) const {
+ostream& Pitch::draw(ostream &os) const {
 	for (int i = 0; i < x; i++) {
 		for (int j = 0; j < y; j++) {
-			pitch[i][j]->draw(os);
-			os << ',';
-			agents[0]->draw(os, i, j);
+			pitch[i][j]->draw(os) << ',';
+			for (int k = 0; k < agents.size(); k++) {
+				agents[k]->draw(os, i, j);
+				if (k < agents.size() - 1) { os << ','; }
+			}
 			os << ' ';
 		}
 		os << endl;
 	}
+
+	return os;
 }
 
 Platform** Pitch::operator[](const int &x) {

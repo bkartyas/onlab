@@ -196,7 +196,7 @@ void Agent::setEnd(EndPlatform platform) {
     Vec2 pos = platform.platform->getPosition();
 
     for(int i = 0; i < 4; i++){
-        knowledge.thoughts[pos.x][pos.y][i] = platform.reward;
+        knowledge.thoughts[pos.x][pos.y][i] = finish.reward;
     }
 }
 
