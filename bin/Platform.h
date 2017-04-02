@@ -14,6 +14,7 @@ class Agent;
 class Platform {
 protected:
 	friend class Pitch;
+	Pitch *pitch; 
 	Vec2 position;
     double reward;
 	Platform *left = nullptr;
@@ -23,11 +24,14 @@ protected:
 
 public:
 
-	Platform(const Vec2 &pos, const double &reward);
+	Platform(Pitch *pitch, const Vec2 &pos, const double &reward);
 
     virtual double getReward();
 	void setReward(const double& reward);
 	Vec2 getPosition();
+
+	bool changePlatform(const char &type);
+	virtual bool isChangeable() = 0;
 
     Platform* inDirection(const Direction &dir);
 	virtual bool step(Agent *agent) = 0;
@@ -40,7 +44,9 @@ class NormalPlatform : public Platform {
     Agent *agent = nullptr;
 
 public:
-    NormalPlatform(const Vec2 &position, const double &reward);
+    NormalPlatform(Pitch *pitch, const Vec2 &position, const double &reward);
+
+	bool isChangeable();
 
 	double getReward();
 	bool step(Agent *agent);
@@ -51,8 +57,11 @@ public:
 
 class WallPlatform : public Platform {
 public:
-    WallPlatform(const Vec2 &position, const double &reward);
+    WallPlatform(Pitch *pitch, const Vec2 &position, const double &reward);
+	
+	bool isChangeable();
 
+	double getReward();
 	bool step(Agent *agent);
 
     virtual ostream& draw(ostream &os) const;
@@ -61,7 +70,7 @@ public:
 
 class PlatformFactory{
 public:
-    Platform* create(const Vec2 &pos, char type, double reward);
+    Platform* create(Pitch *pitch, const Vec2 &pos, char type, double reward);
 };
 
 #endif // PLATFORM_H_INCLUDED

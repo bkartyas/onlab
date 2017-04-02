@@ -24,6 +24,7 @@ public:
 	vector<Agent*> initialize();
 
 	void learn(function<void()> callAfterStep);
+	bool isStartOrFinish(const Platform* platform);
 
 	Platform** operator[](const int &x);
 

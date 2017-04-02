@@ -1,9 +1,11 @@
+var numberOfActions = 6;
+
 var type =  [];
 var Qvalues =  [];
 var ids =  { "A": [],
 			 "E": [] };
-var maxQ;
-var minQ;
+var maxQ = 0;
+var minQ = 0;
 var intervalID;
 var running = false;
 var offset = 0;
@@ -13,8 +15,8 @@ function initialize(){
 	Qvalues =  [];
 	ids =  { "A": [],
 			 "E": [] };
-	maxQ = null;
-	minQ = null;
+	maxQ = 0;
+	minQ = 0;
 	intervalID = null;
 	running = false;
 	offset = 0;
@@ -75,8 +77,9 @@ function resizePitch(){
 		pitch.appendChild(newTR);
 	}
 
-  	$(".platform").height($(".platform").width());
-  	$(".platform").width($(".platform").width());
+  	/*$(".platform").height($(".platform").width());
+  	$(".platform").width($(".platform").width());*/
+  	$(".platform").width($(".platform").height());
 }
 
 function actionType(x, y){
@@ -84,6 +87,8 @@ function actionType(x, y){
 	if(x === 1 && y === 0){ return "up"; }
 	if(x === 2 && y === 1){ return "right"; }
 	if(x === 1 && y === 2){ return "down"; }
+	if(x === 2 && y === 0){ return "destroy"; }
+	if(x === 0 && y === 0){ return "build"; }
 }
 
 function createTableData(x, y){
@@ -176,7 +181,7 @@ function addRadio(){
 	var agentNum = agentsNumber();
 	var radio = document.createElement("input");
 	radio.type = "radio"; radio.name = "QAgent";
-	radio.addEventListener('click', function(){	offset = (agentNum-1) * 4; maxQ = null; minQ = null; });
+	radio.addEventListener('click', function(){	offset = (agentNum-1) * numberOfActions; maxQ = 0; minQ = 0; });
 	radio.id = "Agent" + agentNum + "radio";
 	var label = document.createElement("label");
 	label.innerHTML = "Agent" + agentNum;
@@ -252,7 +257,7 @@ function setColor(id, color){
 	td.style.backgroundColor = color;
 }
 
-function directionMap(index){
+function actionMap(index){
 	switch(index){
 		case 0:
 			return "left";
@@ -266,6 +271,12 @@ function directionMap(index){
 		case 3:
 			return "down";
 			break;
+		case 4:
+			return "destroy";
+			break;
+		case 5:
+			return "build";
+			break;
 	}
 }
 
@@ -273,10 +284,10 @@ function rescaleQcolor(){
 	var x = sizeX.value;
 	var y = sizeY.value;
 
-	for(let i = 0; i < 4; i++){
+	for(let i = 0; i < numberOfActions; i++){
 		for(let j = 0; j < x; j++){
 			for(let k = 0; k < y; k++){
-				id = "action" + directionMap(i) + x + '_' + y;
+				id = "action" + actionMap(i) + x + '_' + y;
 			}
 		}
 	}
@@ -297,11 +308,11 @@ function RedValue(value){
 }
 
 function refreshQvalues(){
-	console.log(Qvalues);
+	//console.log(Qvalues);
 	for(let i = 0; i < Qvalues.length; i++){
 		for(let j = 0; j < Qvalues[i].length; j++){
-			for(let k = 0; k < 4; k++){
-				id = "action" + directionMap(k) + j + "_" + i;
+			for(let k = 0; k < numberOfActions; k++){
+				id = "action" + actionMap(k) + j + "_" + i;
 				if(Qvalues[i][j][offset+k] < 0){
 					setColor(id, RedValue(Qvalues[i][j][offset+k]));
 				} else {
@@ -312,31 +323,31 @@ function refreshQvalues(){
 	}
 }
 
-function refreshPitch(pitchData){
-	var oldMaxQ = maxQ;
-	var oldMinQ = minQ;
-
-	if(!maxQ && pitchData.length !== 0){ maxQ = pitchData[0].Qvalues[offset]; };
-	if(!minQ && pitchData.length !== 0){ minQ = pitchData[0].Qvalues[offset]; };
-
-	for(let i = 0; i < pitchData.length; i++){
-		for(let j = offset; j < offset+4; j++){
-			if(pitchData[i].Qvalues[j] > maxQ){ maxQ = pitchData[i].Qvalues[j]; }
-			if(pitchData[i].Qvalues[j] < minQ){ minQ = pitchData[i].Qvalues[j]; }
+function minmaxQ(){
+	for(let i = 0; i < Qvalues.length; i++){
+		for(let j = 0; j < Qvalues[i].length; j++){
+			for(let k = 0; k < numberOfActions; k++){
+				if(Qvalues[i][j][offset+k] > maxQ){
+					maxQ = Qvalues[i][j][offset+k];
+				}
+				if(Qvalues[i][j][offset+k] < minQ){
+					minQ = Qvalues[i][j][offset+k];
+				}
+			}
 		}
 	}
+}
 
-	if(oldMaxQ !== maxQ || oldMinQ !== minQ){ rescaleQcolor(); }
+function refreshPitch(pitchData){
+	if(!pitchData){ return; }
 
 	for(let i = 0; i < pitchData.length; i++){
 		var id = "pTD" + pitchData[i].x + "_" + pitchData[i].y;
 		setTypeClass(id, getTypeClass(pitchData[i].type[0]));
-			//id = "action" + directionMap(j) + pitchData[i].x + "_" + pitchData[i].y;
 		Qvalues[pitchData[i].y][pitchData[i].x] = pitchData[i].Qvalues;
-
-			//setColor(id, GreenValue(pitchData[i].Qvalues[j]));
 	}
 
+	minmaxQ();
 	refreshQvalues();
 	/*console.log("Q-s")
 	console.log(Qvalues);*/
@@ -349,18 +360,19 @@ function queryNext(onSuccess){
 			dataType: 'json',
             contentType: "application/json; charset=utf-8",
 			success: function(response){
-						console.log(response);
+						//console.log(response);
 						onSuccess(response);
 					}
 	})
 }
 
 function changeSpeed(){
+	if(!running){ return; }
 	clearInterval(intervalID);
 
 	intervalID = setInterval(function(){
 		queryNext(function(response){
-				console.log(response);
+				//console.log(response);
 				if(response['status'] === 'end'){
 					clearInterval(intervalID);
 				} else {
@@ -392,7 +404,7 @@ function startLearning(){
 	if(running){
 		intervalID = setInterval(function(){
 			queryNext(function(response){
-						console.log(response);
+						//console.log(response);
 						if(response['status'] === 'end'){
 							clearInterval(intervalID);
 						} else {

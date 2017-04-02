@@ -1,26 +1,12 @@
 #include <functional>
 #include <string>
+#include <time.h>
 #include "Agent.h"
 #include "EndPlatform.h"
 
 using namespace std;
 
-static unsigned long x = 123456789, y = 362436069, z = 521288629;
-
-unsigned long xorshf96(void) {          //period 2^96-1
-	unsigned long t;
-	x ^= x << 16;
-	x ^= x >> 5;
-	x ^= x << 1;
-
-	t = x;
-	x = y;
-	y = z;
-	z = t ^ x ^ y;
-
-	return z;
-}
-
+Action Agent::action = Action();
 
 Knowledge::Knowledge(const int &x, const int &y, const int &action): x(x), y(y), action(action){
 	thoughts = new double**[x];
@@ -42,7 +28,7 @@ void Knowledge::randomize(const double max) {
 	for (int i = 0; i < x; i++) {
 		for (int j = 0; j < y; j++) {
 			for (int k = 0; k < action; k++) {
-				thoughts[i][j][k] += (int)(xorshf96() % about * 2) - about;
+				thoughts[i][j][k] += (int)(rand() % (about * 2)) - about;
 			}
 		}
 	}
@@ -79,7 +65,7 @@ ostream& operator<<(ostream & os, const Knowledge &knowledge) {
 
 
 Agent::Agent(const string &id, const int &x, const int &y, Platform *start, const int &epoch, const double &alpha, const double &gamma):
-				id(id), knowledge(x, y, 4), start(start), platform(start), epoch(epoch), alpha(alpha), gamma(gamma){
+				id(id), knowledge(x, y, action.size), start(start), platform(start), epoch(epoch), alpha(alpha), gamma(gamma){
 	start->step(this);
 }
 
@@ -113,82 +99,93 @@ bool Agent::learn(){
 };
 
 void Agent::learnStep() {
+	Platform* old = platform;
 	Vec2 pos = platform->getPosition();
 
-	int direction = stepLeft;
-	if (((int)(xorshf96() % 10) - 4)) {
-		for (int i = 1; i <= 3; i = i + 1) {
-			if (knowledge.thoughts[pos.x][pos.y][direction] < knowledge.thoughts[pos.x][pos.y][i] ||
-				(knowledge.thoughts[pos.x][pos.y][direction] == knowledge.thoughts[pos.x][pos.y][i] && (int)(xorshf96() % 2))) {
-				direction = i;
+	int direction = action.stepLeft;
+	int stepAction = action.stepLeft;
+	if (((int)(rand() % 10) - 4)) {
+		for (int i = 1; i < action.size; i += 1) {
+			if (knowledge.thoughts[pos.x][pos.y][stepAction] < knowledge.thoughts[pos.x][pos.y][i] ||
+				(knowledge.thoughts[pos.x][pos.y][stepAction] == knowledge.thoughts[pos.x][pos.y][i] && (int)(rand() % 2))) {
+				if (i < 4) { direction = i; }
+				stepAction = i;
 			}
 		}
 	} else {
-		direction = (int)(xorshf96() % 4);
+		stepAction = (int)(rand() % action.size);
+		if (stepAction < 4) { direction = stepAction; }
+		else { direction = (int)(rand() % 4); }
 	}
 
 	Direction dir;
 	switch (direction) {
-	case stepLeft:
+	case action.stepLeft:
 		dir = Direction::left;
 		break;
-	case stepUp:
+	case action.stepUp:
 		dir = Direction::up;
 		break;
-	case stepRight:
+	case action.stepRight:
 		dir = Direction::right;
 		break;
-	case stepDown:
+	case action.stepDown:
 		dir = Direction::down;
-
 		break;
 	}
-	//cout << this->id << " " << direction ;
 
-	double reward = step(dir);
-	if (platform == finish.platform) { reward = finish.reward; }
-
+	double reward = 0.0;
+	if (stepAction == direction) {
+		reward = step(dir);
+		if (platform == finish.platform) { reward = finish.reward; }
+	} else {
+		reward = changePlatform(dir, stepAction);
+	}
+	
+	
 	Vec2 newPos = platform->getPosition();
 	int newMax = 0;
-	for (int i = 1; i <= 3; i = i + 1) {
+	for (int i = 1; i < action.size; i = i + 1) {
 		if (knowledge.thoughts[newPos.x][newPos.y][newMax] < knowledge.thoughts[newPos.x][newPos.y][i]) {
 			newMax = i;
 		}
 	}
 
-	
-	knowledge.thoughts[pos.x][pos.y][direction] += alpha * (reward + gamma * knowledge.thoughts[newPos.x][newPos.y][newMax] - knowledge.thoughts[pos.x][pos.y][direction]);
+	knowledge.thoughts[pos.x][pos.y][stepAction] += alpha * (reward + gamma * knowledge.thoughts[newPos.x][newPos.y][newMax] - knowledge.thoughts[pos.x][pos.y][stepAction]);
 }
 
 void Agent::stepNext() {
+	Platform* old = platform;
 	Vec2 pos = platform->getPosition();
 
-	int direction = stepLeft;
-	for (int i = 1; i <= 3; i = i + 1) {
-		if (knowledge.thoughts[pos.x][pos.y][direction] < knowledge.thoughts[pos.x][pos.y][i] ||
-			(knowledge.thoughts[pos.x][pos.y][direction] == knowledge.thoughts[pos.x][pos.y][i] && (int)(xorshf96() % 2))) {
-			direction = i;
+	int direction = action.stepLeft;
+	int stepAction = action.stepLeft;
+	for (int i = 1; i < action.size; i += 1) {
+		if (knowledge.thoughts[pos.x][pos.y][stepAction] < knowledge.thoughts[pos.x][pos.y][i] ||
+			(knowledge.thoughts[pos.x][pos.y][stepAction] == knowledge.thoughts[pos.x][pos.y][i] && (int)(rand() % 2))) {
+			if (i < 4) { direction = i; }
+			stepAction = i;
 		}
 	}
 
 	Direction dir;
 	switch (direction) {
-	case stepLeft:
+	case action.stepLeft:
 		dir = Direction::left;
 		break;
-	case stepUp:
+	case action.stepUp:
 		dir = Direction::up;
 		break;
-	case stepRight:
+	case action.stepRight:
 		dir = Direction::right;
 		break;
-	case stepDown:
+	case action.stepDown:
 		dir = Direction::down;
-
 		break;
 	}
 
-	step(dir);
+	if (stepAction == direction) { step(dir);} 
+	else { changePlatform(dir, stepAction); }
 }
 
 void Agent::setEnd(EndPlatform platform) {
@@ -198,6 +195,10 @@ void Agent::setEnd(EndPlatform platform) {
     for(int i = 0; i < 4; i++){
         knowledge.thoughts[pos.x][pos.y][i] = finish.reward;
     }
+}
+
+bool Agent::isStartOrFinish(const Platform* platform) {
+	return (platform == start || platform == finish.platform);
 }
 
 double Agent::step(Platform *next){
@@ -215,6 +216,23 @@ double Agent::step(Platform *next){
     return -1000.0;
 }
 
+double Agent::changePlatform(const Direction &dir, const int& act) {
+	Platform* next = platform->inDirection(dir);
+
+	if (!next) {
+		return -1000.0;
+	}
+
+	if (act == action.changeToPlatform) {
+		if (next->changePlatform('P')) { delete next; };
+	}
+	else if (act == action.changeToWall) {
+		if (next->changePlatform('W')) { delete next; };
+	}
+
+	return 0.0;
+}
+
 double Agent::step(const Direction &dir) {
     Platform* next = platform->inDirection(dir);
 
@@ -222,9 +240,9 @@ double Agent::step(const Direction &dir) {
 }
 
 ostream& Agent::draw(ostream &os, const int &i, const int &j) const {
-	for (int k = 0; k < 4; k++) {
+	for (int k = 0; k < action.size; k++) {
 		os << knowledge.thoughts[i][j][k];
-		if (k != 3) {
+		if (k != action.size -1) {
 			os << ",";
 		}
 	}

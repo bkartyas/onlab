@@ -7,7 +7,15 @@
 
 using namespace std;
 
-enum Action{ stepLeft, stepUp, stepRight, stepDown };
+class Action {
+public:
+	int size = 6;
+	enum type {
+		stepLeft, stepUp, stepRight, stepDown,
+		changeToWall, changeToPlatform
+	};
+
+};
 
 class Platform;
 class Agent;
@@ -29,6 +37,7 @@ ostream& operator<<(ostream& os, const Knowledge &knowledge);
 
 class Agent {
 	string id;
+	static Action action;
 	int epoch;
 	double alpha, gamma;
 	Knowledge knowledge;
@@ -45,7 +54,9 @@ public:
 	void stepNext();
 
     void setEnd(EndPlatform platform);
+	bool isStartOrFinish(const Platform* platform);
 
+	double changePlatform(const Direction &dir, const int& act);
 	double step(Platform *next);
 	double step(const Direction &dir);
 

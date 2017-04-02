@@ -3,6 +3,7 @@
 #include <string>
 #include <map>
 #include <utility>
+#include <Windows.h>
 #include <stdlib.h>
 #include "Pitch.h"
 #include "Vec2.h"
@@ -27,6 +28,7 @@ vector<string> split(const string &s, const char &delimiter) {
 
 
 Pitch::Pitch(const int &x, const int &y): x(x), y(y) {
+	srand(GetTickCount());
 	pitch = new Platform**[x];
 	for (int i = 0; i < x; i++) {
 		pitch[i] = new Platform*[y];
@@ -61,7 +63,7 @@ vector<Agent*> Pitch::initialize(){
 			char *a;
 			double reward = strtod(settings[1].c_str(), &a);
 
-			pitch[i][j] = pf.create(Vec2(i, j), settings[0][0], reward);
+			pitch[i][j] = pf.create(this, Vec2(i, j), settings[0][0], reward);
 			if(settings[0][0] == 'E'){ 
 				pitch[i][j]->setReward(-10.0);
 				agent_end[id].second = EndPlatform(pitch[i][j], reward);
@@ -98,6 +100,13 @@ void Pitch::learn(function<void()> callAfterStep) {
 			}
 		}
 	}
+}
+
+bool Pitch::isStartOrFinish(const Platform* platform) {
+	for (auto agent : agents) {
+		if (agent->isStartOrFinish(platform)) { return true; }
+	}
+	return false;
 }
 
 void Pitch::link() {

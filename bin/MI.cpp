@@ -8,7 +8,7 @@ using namespace std;
 int main()
 {
 	cout << "start" << endl;
-	
+
 	int sizeX, sizeY;
 	cin >> sizeX >> sizeY;
 	Pitch pitch(sizeX, sizeY);
