@@ -76,10 +76,11 @@ void Agent::randomizeQ(const double max) {
 bool Agent::learn(){
 	if (epoch > 0) {
 		if (platform == finish.platform) {
-			start->step(this);
-			platform->step(nullptr);
-			platform = start;
-			epoch--;
+			if (start->step(this)) {
+				platform->step(nullptr);
+				platform = start;
+				epoch--;
+			}
 		} else {
 			learnStep();
 		}
@@ -104,7 +105,8 @@ void Agent::learnStep() {
 
 	int direction = action.stepLeft;
 	int stepAction = action.stepLeft;
-	if (((int)(rand() % 10) - 4)) {
+	
+	if (((int)(rand() % 100) - 25)) {
 		for (int i = 1; i < action.size; i += 1) {
 			if (knowledge.thoughts[pos.x][pos.y][stepAction] < knowledge.thoughts[pos.x][pos.y][i] ||
 				(knowledge.thoughts[pos.x][pos.y][stepAction] == knowledge.thoughts[pos.x][pos.y][i] && (int)(rand() % 2))) {
@@ -230,7 +232,7 @@ double Agent::changePlatform(const Direction &dir, const int& act) {
 		if (next->changePlatform('W')) { delete next; };
 	}
 
-	return 0.0;
+	return -10.0;
 }
 
 double Agent::step(const Direction &dir) {

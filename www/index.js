@@ -177,6 +177,14 @@ function agentsNumber(){
 	return i;
 }
 
+function agentsIndex(id){
+	let i = 1;
+	for(agent in ids["A"]){
+		if(id === ids.A[agent]){ return i; }
+		if(agent){ i++; }
+	}
+}
+
 function addRadio(){
 	var agentNum = agentsNumber();
 	var radio = document.createElement("input");
@@ -230,13 +238,14 @@ function setTypeClass(id, typeClass){
 	element.classList.remove("emptyPlatform");
 	element.classList.remove("wall");
 	element.classList.remove("agent");
+	element.classList.remove("choosenAgent");
 	element.classList.remove("finish");
 	element.classList.add(typeClass);
 }
 
 
 function getTypeClass(type){
-	switch(type){
+	switch(type[0]){
 	case "P":
 		return "emptyPlatform";
 		break;
@@ -244,7 +253,11 @@ function getTypeClass(type){
 		return "wall";
 		break;
 	case "A":
-		return "agent";
+		if(agentsIndex(Number(type.split("A")[1])) === Math.floor(offset / numberOfActions + 1)){
+			return "choosenAgent";
+		} else {
+			return "agent";
+		}
 		break;
 	case "E":
 		return "finish";
@@ -343,7 +356,7 @@ function refreshPitch(pitchData){
 
 	for(let i = 0; i < pitchData.length; i++){
 		var id = "pTD" + pitchData[i].x + "_" + pitchData[i].y;
-		setTypeClass(id, getTypeClass(pitchData[i].type[0]));
+		setTypeClass(id, getTypeClass(pitchData[i].type));
 		Qvalues[pitchData[i].y][pitchData[i].x] = pitchData[i].Qvalues;
 	}
 

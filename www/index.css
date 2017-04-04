@@ -2,6 +2,11 @@
 	background-color: #f7f7f9;
 }
 
+.choosenAgent {
+	background-image: url(pictures/choosenAgent.jpg);
+	background-size: 100%;
+}
+
 .agent {
 	background-image: url(pictures/agent.jpg);
 	background-size: 100%;
