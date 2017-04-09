@@ -4,10 +4,13 @@
 
 using namespace std;
 
-Platform::Platform(Pitch *pitch, const Vec2 &pos, const double &reward, const char& type): pitch(pitch), reward(reward), position(pos), type(type) {}
-Platform::Platform(const Platform& platform): pitch(platform.pitch), reward(platform.reward), position(platform.position), type(platform.type) {};
+Platform::Platform(Pitch *pitch, const Vec2 &pos, const double &reward, const double &changeReward, const char& type): 
+	pitch(pitch), reward(reward), changeReward(changeReward), position(pos), type(type) {}
+Platform::Platform(const Platform& platform): 
+	pitch(platform.pitch), reward(platform.reward), changeReward(platform.changeReward), position(platform.position), type(platform.type) {};
 
 double Platform::getReward(){ return reward; };
+double Platform::getChangeReward() { return changeReward; };
 void Platform::setReward(const double& reward) { this->reward = reward; };
 
 Vec2 Platform::getPosition(){ return position; };
@@ -16,8 +19,8 @@ bool Platform::changePlatform(const char& type) {
 	if (this->isChangeable()) { return false; }
 	
 	Platform *platform = nullptr;
-	if (type == 'P') { platform = new NormalPlatform(pitch, position, reward); }
-	else if (type == 'W') { platform = new WallPlatform(pitch, position, reward); }
+	if (type == 'P') { platform = new NormalPlatform(pitch, position, reward, changeReward); }
+	else if (type == 'W') { platform = new WallPlatform(pitch, position, reward, changeReward); }
 	else { return false; }
 
 	(*pitch)[this->position.x][this->position.y] = platform;
@@ -59,7 +62,7 @@ Platform* Platform::inDirection(const Direction &dir){
     return next;
 }
 
-NormalPlatform::NormalPlatform(Pitch *pitch, const Vec2 &position, const double& reward): Platform(pitch, position, reward, 'P') {};
+NormalPlatform::NormalPlatform(Pitch *pitch, const Vec2 &position, const double& reward, double changeReward): Platform(pitch, position, reward, changeReward, 'P') {};
 NormalPlatform::NormalPlatform(const NormalPlatform& platform) : Platform(platform), agent(platform.agent) {};
 
 bool NormalPlatform::isChangeable() {
@@ -103,7 +106,7 @@ ostream& NormalPlatform::draw(ostream &os) const {
 }
 
 
-WallPlatform::WallPlatform(Pitch *pitch, const Vec2 &position, const double& reward): Platform(pitch, position, reward, 'W'){};
+WallPlatform::WallPlatform(Pitch *pitch, const Vec2 &position, const double &reward, double changeReward): Platform(pitch, position, reward, changeReward, 'W'){};
 WallPlatform::WallPlatform(const WallPlatform& platform) : Platform(platform){};
 
 bool WallPlatform::isChangeable() {
@@ -128,10 +131,10 @@ ostream& WallPlatform::draw(ostream &os) const {
 }
 
 
-Platform* PlatformFactory::create(Pitch *pitch, const Vec2 &pos, char type, double reward){
+Platform* PlatformFactory::create(Pitch *pitch, const Vec2 &pos, char type, double reward, double changeReward){
     if(type == 'W'){
-        return new WallPlatform(pitch, pos, reward);
+        return new WallPlatform(pitch, pos, reward, changeReward);
     } else {
-        return new NormalPlatform(pitch, pos, reward);
+        return new NormalPlatform(pitch, pos, reward, changeReward);
     }
 }

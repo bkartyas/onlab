@@ -142,6 +142,9 @@ void Agent::learnStep() {
 		}
 	}
 
+	if (stepAction != direction) {
+		knowledge.thoughts[pos.x][pos.y][direction] += alpha * (reward + gamma * knowledge.thoughts[newPos.x][newPos.y][newMax] - knowledge.thoughts[pos.x][pos.y][direction]);
+	}
 	knowledge.thoughts[pos.x][pos.y][stepAction] += alpha * (reward + gamma * knowledge.thoughts[newPos.x][newPos.y][newMax] - knowledge.thoughts[pos.x][pos.y][stepAction]);
 }
 
@@ -230,14 +233,16 @@ double Agent::changePlatform(const Direction &dir, const int& act) {
 		return -1000.0;
 	}
 
+	double reward = -20;
+
 	if (act == action.changeToPlatform) {
-		if (next->type != 'P' && next->changePlatform('P')) { delete next; return -5; };
+		if (next->type != 'P' && next->changePlatform('P')) { reward = next->getChangeReward();  delete next;};
 	}
 	else if (act == action.changeToWall) {
-		if (numberOfWalls > 0 && next->type != 'W' && next->changePlatform('W')) { numberOfWalls--; delete next; };
+		if (numberOfWalls > 0 && next->type != 'W' && next->changePlatform('W')) { numberOfWalls--; reward = next->getChangeReward(); delete next; };
 	}
 
-	return -10.0;
+	return reward;
 }
 
 double Agent::step(const Direction &dir) {

@@ -393,7 +393,7 @@ function changeSpeed(){
 					refreshPitch(response.pitch);
 				}
 			}
-		)}, Number(speed.value)
+		)}, (speed.max - Number(speed.value) + Number(speed.min))
 	);
 }
 
@@ -425,7 +425,7 @@ function startLearning(){
 							refreshPitch(response.pitch);
 						}
 					}
-			)}, Number(speed.value)
+			)}, (speed.max - Number(speed.value) + Number(speed.min))
 		);
 	} else {
 		initialize();

@@ -17,7 +17,7 @@ vector<string> split(const string &s, const char &delimiter) {
 	int before = 0;
 	for (int i = 0; i < s.size(); i++) {
 		if (s[i] == delimiter) {
-			result.push_back(s.substr(before, i));
+			result.push_back(s.substr(before, i - before));
 			before = i+1;
 		}
 	}
@@ -60,10 +60,17 @@ vector<Agent*> Pitch::initialize(){
 			string input; cin >> input;
 			vector<string> settings = split(input, ',');
 			string id = settings[0].substr(1, settings[0].size() - 1);
+			
 			char *a;
-			double reward = strtod(settings[1].c_str(), &a);
-
-			pitch[i][j] = pf.create(this, Vec2(i, j), settings[0][0], reward);
+			double reward = -10, changeReward = -10;
+			if (settings.size() > 1) {
+				reward = strtod(settings[1].c_str(), &a);
+			} 
+			if (settings.size() > 2) {
+				changeReward = strtod(settings[2].c_str(), &a);;
+			} 
+			
+			pitch[i][j] = pf.create(this, Vec2(i, j), settings[0][0], reward, changeReward);
 			if(settings[0][0] == 'E'){ 
 				pitch[i][j]->setReward(-10.0);
 				agent_end[id].second = EndPlatform(pitch[i][j], reward);
