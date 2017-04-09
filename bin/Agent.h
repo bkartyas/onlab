@@ -9,7 +9,7 @@ using namespace std;
 
 class Action {
 public:
-	int size = 6;
+	int size = 4;
 	enum type {
 		stepLeft, stepUp, stepRight, stepDown,
 		changeToWall, changeToPlatform
@@ -46,7 +46,7 @@ class Agent {
 	EndPlatform finish;
 
 public:
-	Agent(const string &id, const int &x, const int &y, Platform *start, const int &epoch, const double &alpha, const double &gamma);
+	Agent(const string &id, const int &x, const int &y, Platform *start, const double &alpha, const double &gamma);
 
 	void randomizeQ(const double max);
 	bool learn();
@@ -54,11 +54,13 @@ public:
 	void stepNext();
 
     void setEnd(EndPlatform platform);
+	void setEpoch(const int& epoch);
 	bool isStartOrFinish(const Platform* platform);
 
 	double changePlatform(const Direction &dir, const int& act);
 	double step(Platform *next);
 	double step(const Direction &dir);
+	bool restart();
 
 	ostream& draw(ostream &os, const int &i, const int &j) const;
 	ostream& draw(ostream &os) const;

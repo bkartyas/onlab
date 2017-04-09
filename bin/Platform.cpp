@@ -67,7 +67,7 @@ bool NormalPlatform::isChangeable() {
 
 double NormalPlatform::getReward() {
 	if (this->agent) {
-		return -1000;
+		return -100;
 	}
 
 	return Platform::getReward();

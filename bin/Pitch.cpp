@@ -68,7 +68,7 @@ vector<Agent*> Pitch::initialize(){
 				pitch[i][j]->setReward(-10.0);
 				agent_end[id].second = EndPlatform(pitch[i][j], reward);
 			} else if(settings[0][0] == 'A'){ 
-				agent_end[id].first = new Agent(id, x, y, pitch[i][j], epoch, alpha, gamma); 
+				agent_end[id].first = new Agent(id, x, y, pitch[i][j], alpha, gamma); 
 			}
 			if (reward > maxRe) { maxRe = reward; }
         }
@@ -77,6 +77,7 @@ vector<Agent*> Pitch::initialize(){
 	for (auto const &agent_end_pairs : agent_end) {
 		auto agent_end_pair = agent_end_pairs.second;
 		agents.push_back(agent_end_pair.first);
+		agent_end_pair.first->setEpoch(agents.size() * epoch / agent_end.size());
 		if (agent_end_pair.first && agent_end_pair.second.platform) {
 			agent_end_pair.first->setEnd(agent_end_pair.second);
 			//agent_end_pair.first->randomizeQ(maxRe);
@@ -91,13 +92,21 @@ vector<Agent*> Pitch::initialize(){
 void Pitch::learn(function<void()> callAfterStep) {
 	bool end = false;
 	while (!end) {
-		end = true;
-		for (int i = 0; i < agents.size(); i++) {
-			if (agents[i]->learn()) {
-				cout << *this << endl;
-				end = false;
-				callAfterStep();
+		bool epochEnd = true;
+		for (auto &agent: agents) {
+			if (agent->learn()) {
+				epochEnd = false;
 			}
+			cout << *this << endl;
+			callAfterStep();
+		}
+		if (epochEnd) {
+			end = true; 
+			for (auto &agent : agents) {
+				bool back = agent->restart();
+				end = end && !back;
+			}
+			cout << *this << endl;
 		}
 	}
 }

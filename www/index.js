@@ -1,4 +1,4 @@
-var numberOfActions = 6;
+var numberOfActions = 4;
 
 var type =  [];
 var Qvalues =  [];
@@ -235,6 +235,7 @@ function stepStatus(tableData){
 
 function setTypeClass(id, typeClass){
 	var element = document.getElementById(id);
+
 	element.classList.remove("emptyPlatform");
 	element.classList.remove("wall");
 	element.classList.remove("agent");
@@ -308,14 +309,14 @@ function rescaleQcolor(){
 
 function GreenValue(value){
 	var rb;
-	rb = Math.round((1 - value/maxQ) * 255);
+	rb = 64 - Math.round((value/maxQ) * 64);
 	a = value/maxQ;
 	return 'rgba(' + rb + ',255,' + rb + ',' + a + ')';
 }
 
 function RedValue(value){
 	var gb;
-	gb = Math.round((1 - value/minQ) * 255);
+	gb = 64 - Math.round((value/minQ) * 64);
 	a = value/minQ;
 	return 'rgba(255,' + gb + ',' + gb + ',' + a + ')';
 }

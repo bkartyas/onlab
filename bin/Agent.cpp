@@ -64,8 +64,8 @@ ostream& operator<<(ostream & os, const Knowledge &knowledge) {
 }
 
 
-Agent::Agent(const string &id, const int &x, const int &y, Platform *start, const int &epoch, const double &alpha, const double &gamma):
-				id(id), knowledge(x, y, action.size), start(start), platform(start), epoch(epoch), alpha(alpha), gamma(gamma){
+Agent::Agent(const string &id, const int &x, const int &y, Platform *start, const double &alpha, const double &gamma):
+				id(id), knowledge(x, y, action.size), start(start), platform(start), alpha(alpha), gamma(gamma), epoch(0){
 	start->step(this);
 }
 
@@ -76,25 +76,14 @@ void Agent::randomizeQ(const double max) {
 bool Agent::learn(){
 	if (epoch > 0) {
 		if (platform == finish.platform) {
-			if (start->step(this)) {
-				platform->step(nullptr);
-				platform = start;
-				epoch--;
-			}
-		} else {
-			learnStep();
-		}
+			return false;
+		} 
+
+		learnStep();
 		return true;
+	} else if (platform != finish.platform) {
+		stepNext();
 	}
-
-	if (platform == finish.platform) {
-		start->step(this);
-		platform->step(nullptr);
-		platform = start;
-		epoch--;
-	}
-
-	stepNext();
 
 	return false;
 };
@@ -106,7 +95,7 @@ void Agent::learnStep() {
 	int direction = action.stepLeft;
 	int stepAction = action.stepLeft;
 	
-	if (((int)(rand() % 100) - 25)) {
+	if (((int)(rand() % 100) - 35)) {
 		for (int i = 1; i < action.size; i += 1) {
 			if (knowledge.thoughts[pos.x][pos.y][stepAction] < knowledge.thoughts[pos.x][pos.y][i] ||
 				(knowledge.thoughts[pos.x][pos.y][stepAction] == knowledge.thoughts[pos.x][pos.y][i] && (int)(rand() % 2))) {
@@ -199,6 +188,10 @@ void Agent::setEnd(EndPlatform platform) {
     }
 }
 
+void Agent::setEpoch(const int& epoch) {
+	this->epoch = epoch;
+};
+
 bool Agent::isStartOrFinish(const Platform* platform) {
 	return (platform == start || platform == finish.platform);
 }
@@ -239,6 +232,16 @@ double Agent::step(const Direction &dir) {
     Platform* next = platform->inDirection(dir);
 
     return step(next);
+}
+
+bool Agent::restart() {
+	if (platform != start && start->step(this)) {
+		platform->step(nullptr);
+		platform = start;
+		epoch--;
+	}
+
+	return epoch > 0 ? true : false;
 }
 
 ostream& Agent::draw(ostream &os, const int &i, const int &j) const {
