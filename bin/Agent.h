@@ -9,7 +9,7 @@ using namespace std;
 
 class Action {
 public:
-	int size = 4;
+	int size = 6;
 	enum type {
 		stepLeft, stepUp, stepRight, stepDown,
 		changeToWall, changeToPlatform
@@ -40,6 +40,7 @@ class Agent {
 	static Action action;
 	int epoch;
 	double alpha, gamma;
+	int numberOfWalls = 3;
 	Knowledge knowledge;
 	Platform* platform;
 	Platform* start;
@@ -53,7 +54,8 @@ public:
 	void learnStep();
 	void stepNext();
 
-    void setEnd(EndPlatform platform);
+	void setEnd(EndPlatform platform);
+	void newStartOrEnd(Platform* from, Platform* to);
 	void setEpoch(const int& epoch);
 	bool isStartOrFinish(const Platform* platform);
 

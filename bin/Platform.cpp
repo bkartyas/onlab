@@ -4,7 +4,8 @@
 
 using namespace std;
 
-Platform::Platform(Pitch *pitch, const Vec2 &pos, const double &reward): pitch(pitch), reward(reward), position(pos) {}
+Platform::Platform(Pitch *pitch, const Vec2 &pos, const double &reward, const char& type): pitch(pitch), reward(reward), position(pos), type(type) {}
+Platform::Platform(const Platform& platform): pitch(platform.pitch), reward(platform.reward), position(platform.position), type(platform.type) {};
 
 double Platform::getReward(){ return reward; };
 void Platform::setReward(const double& reward) { this->reward = reward; };
@@ -58,8 +59,8 @@ Platform* Platform::inDirection(const Direction &dir){
     return next;
 }
 
-
-NormalPlatform::NormalPlatform(Pitch *pitch, const Vec2 &position, const double& reward): Platform(pitch, position, reward) {};
+NormalPlatform::NormalPlatform(Pitch *pitch, const Vec2 &position, const double& reward): Platform(pitch, position, reward, 'P') {};
+NormalPlatform::NormalPlatform(const NormalPlatform& platform) : Platform(platform), agent(platform.agent) {};
 
 bool NormalPlatform::isChangeable() {
 	return ((bool) agent) || pitch->isStartOrFinish(this);
@@ -85,6 +86,11 @@ bool NormalPlatform::step(Agent *agent){
     return false;
 }
 
+Platform* NormalPlatform::clone() const {
+	return new NormalPlatform(*this);
+}
+
+
 ostream& NormalPlatform::draw(ostream &os) const {
 	if(!agent){
         os << "P";
@@ -97,7 +103,8 @@ ostream& NormalPlatform::draw(ostream &os) const {
 }
 
 
-WallPlatform::WallPlatform(Pitch *pitch, const Vec2 &position, const double& reward): Platform(pitch, position, reward) {};
+WallPlatform::WallPlatform(Pitch *pitch, const Vec2 &position, const double& reward): Platform(pitch, position, reward, 'W'){};
+WallPlatform::WallPlatform(const WallPlatform& platform) : Platform(platform){};
 
 bool WallPlatform::isChangeable() {
 	return pitch->isStartOrFinish(this);
@@ -109,6 +116,10 @@ double WallPlatform::getReward() {
 
 bool WallPlatform::step(Agent *agent){
     return false;
+}
+
+Platform* WallPlatform::clone() const {
+	return new WallPlatform(*this);
 }
 
 ostream& WallPlatform::draw(ostream &os) const {

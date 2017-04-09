@@ -13,8 +13,10 @@ using namespace std;
 class Pitch {
 	int x, y;
 	Platform*** pitch;
+	Platform*** pitchClone;
 	vector<Agent*> agents;
 
+	Platform*** clone();
 	void link();
 
 public:
@@ -24,8 +26,10 @@ public:
 	vector<Agent*> initialize();
 
 	void learn(function<void()> callAfterStep);
+	void resetPitch();
 	bool isStartOrFinish(const Platform* platform);
 
+	
 	Platform** operator[](const int &x);
 
 	Vec2 getSize() const;

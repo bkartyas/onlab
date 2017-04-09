@@ -85,6 +85,7 @@ vector<Agent*> Pitch::initialize(){
 	}
 	
 	link();
+	pitchClone = clone();
 
 	return agents;
 }
@@ -106,9 +107,27 @@ void Pitch::learn(function<void()> callAfterStep) {
 				bool back = agent->restart();
 				end = end && !back;
 			}
+
+			resetPitch();
 			cout << *this << endl;
 		}
 	}
+}
+
+void Pitch::resetPitch() {
+	for (int i = 0; i < x; i++) {
+		for (int j = 0; j < y; j++) {
+			if (this->pitch[i][j]->type != this->pitchClone[i][j]->type) {
+				Platform* clone = this->pitchClone[i][j]->clone();
+				for (auto &agent : agents) {
+					agent->newStartOrEnd(this->pitch[i][j], clone);
+				}
+				this->pitch[i][j] = clone;
+			}
+		}
+	}
+
+	link();
 }
 
 bool Pitch::isStartOrFinish(const Platform* platform) {
@@ -117,6 +136,22 @@ bool Pitch::isStartOrFinish(const Platform* platform) {
 	}
 	return false;
 }
+
+Platform*** Pitch::clone() {
+	Platform*** pitch;
+	pitch = new Platform**[x];
+	for (int i = 0; i < x; i++) {
+		pitch[i] = new Platform*[y];
+	}
+
+	for (int i = 0; i < x; i++) {
+		for (int j = 0; j < y; j++) {
+			pitch[i][j] = this->pitch[i][j]->clone();
+		}
+	}
+
+	return pitch;
+};
 
 void Pitch::link() {
 	for (int i = 0; i < x; i++) {

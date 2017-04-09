@@ -188,6 +188,18 @@ void Agent::setEnd(EndPlatform platform) {
     }
 }
 
+void Agent::newStartOrEnd(Platform* from, Platform* to) {
+	if (from == start) {
+		start = to;
+	}
+	if (from == finish.platform) {
+		finish.platform = to;
+	}
+	if (from == platform) {
+		platform = to;
+	}
+}
+
 void Agent::setEpoch(const int& epoch) {
 	this->epoch = epoch;
 };
@@ -219,10 +231,10 @@ double Agent::changePlatform(const Direction &dir, const int& act) {
 	}
 
 	if (act == action.changeToPlatform) {
-		if (next->changePlatform('P')) { delete next; };
+		if (next->type != 'P' && next->changePlatform('P')) { delete next; return -5; };
 	}
 	else if (act == action.changeToWall) {
-		if (next->changePlatform('W')) { delete next; };
+		if (numberOfWalls > 0 && next->type != 'W' && next->changePlatform('W')) { numberOfWalls--; delete next; };
 	}
 
 	return -10.0;
@@ -236,6 +248,7 @@ double Agent::step(const Direction &dir) {
 
 bool Agent::restart() {
 	if (platform != start && start->step(this)) {
+		numberOfWalls = 3;
 		platform->step(nullptr);
 		platform = start;
 		epoch--;

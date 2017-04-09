@@ -12,6 +12,8 @@ using namespace std;
 class Agent;
 
 class Platform {
+public:
+	char type;
 protected:
 	friend class Pitch;
 	Pitch *pitch; 
@@ -24,7 +26,8 @@ protected:
 
 public:
 
-	Platform(Pitch *pitch, const Vec2 &pos, const double &reward);
+	Platform(Pitch *pitch, const Vec2 &pos, const double &reward, const char& type);
+	Platform(const Platform& platform);
 
     virtual double getReward();
 	void setReward(const double& reward);
@@ -36,6 +39,8 @@ public:
     Platform* inDirection(const Direction &dir);
 	virtual bool step(Agent *agent) = 0;
 
+	virtual Platform* clone() const = 0;
+	
 	virtual ostream& draw(ostream &os) const = 0;
 };
 
@@ -45,26 +50,32 @@ class NormalPlatform : public Platform {
 
 public:
     NormalPlatform(Pitch *pitch, const Vec2 &position, const double &reward);
+	NormalPlatform(const NormalPlatform& platform);
 
 	bool isChangeable();
 
 	double getReward();
 	bool step(Agent *agent);
 
-	virtual ostream& draw(ostream &os) const;
+	Platform* clone() const;
+
+	ostream& draw(ostream &os) const;
 };
 
 
 class WallPlatform : public Platform {
 public:
     WallPlatform(Pitch *pitch, const Vec2 &position, const double &reward);
-	
+	WallPlatform(const WallPlatform& platform);
+
 	bool isChangeable();
 
 	double getReward();
 	bool step(Agent *agent);
 
-    virtual ostream& draw(ostream &os) const;
+	Platform* clone() const;
+
+    ostream& draw(ostream &os) const;
 };
 
 
