@@ -7,29 +7,37 @@
 
 using namespace std;
 
-class Action {
-public:
-	int size = 6;
+struct Action {
+	int size = 12;
+	int groupSize = 4;
 	enum type {
 		stepLeft, stepUp, stepRight, stepDown,
-		changeToWall, changeToPlatform
+		buildLeft, buildUp, buildRight, buildDown,
+		destroyLeft, destroyUp, destroyRight, destroyDown,
 	};
-
 };
 
 class Platform;
 class Agent;
 
 class Knowledge{
-	int x, y, action;
+	static Action action;
+	int x, y;
 	double ***thoughts;
 	friend Agent;
 public:
-	Knowledge(const int &x, const int &y, const int &action);
+	Knowledge(const int& x, const int& y);
 	void randomize(const double max);
+
+	int& maxIndex(const int& x, const int& y, const int& offset) const;
+	int& bestAction(const int& x, const int& y) const;
+	int random() const;
+	Direction direction(const int& a) const;
 
 	~Knowledge();
 
+
+	ostream& draw(ostream& os, const int& x, const int& y) const;
 	ostream& draw(ostream& os) const;
 };
 
@@ -37,9 +45,9 @@ ostream& operator<<(ostream& os, const Knowledge &knowledge);
 
 class Agent {
 	string id;
-	static Action action;
 	int epoch;
 	double alpha, gamma;
+	int built = 0;
 	int numberOfWalls = 3;
 	Knowledge knowledge;
 	Platform* platform;

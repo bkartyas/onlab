@@ -87,7 +87,7 @@ vector<Agent*> Pitch::initialize(){
 		agent_end_pair.first->setEpoch(agents.size() * epoch / agent_end.size());
 		if (agent_end_pair.first && agent_end_pair.second.platform) {
 			agent_end_pair.first->setEnd(agent_end_pair.second);
-			//agent_end_pair.first->randomizeQ(maxRe);
+			agent_end_pair.first->randomizeQ(maxRe);
 		}
 	}
 	

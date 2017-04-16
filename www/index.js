@@ -1,4 +1,4 @@
-var numberOfActions = 6;
+var numberOfActions = 5;
 
 var type =  [];
 var Qvalues =  [];
