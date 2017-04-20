@@ -1,4 +1,4 @@
-var numberOfActions = 5;
+var numberOfActions = 6;
 
 var type =  [];
 var Qvalues =  [];
@@ -189,7 +189,7 @@ function addRadio(){
 	var agentNum = agentsNumber();
 	var radio = document.createElement("input");
 	radio.type = "radio"; radio.name = "QAgent";
-	radio.addEventListener('click', function(){	offset = (agentNum-1) * numberOfActions; maxQ = 0; minQ = 0; });
+	radio.addEventListener('click', function(){	offset = (agentNum-1) * numberOfActions; maxQ = 0; minQ = 0; refreshQvalues(); });
 	radio.id = "Agent" + agentNum + "radio";
 	var label = document.createElement("label");
 	label.innerHTML = "Agent" + agentNum;
@@ -286,10 +286,10 @@ function actionMap(index){
 			return "down";
 			break;
 		case 4:
-			return "destroy";
+			return "build";
 			break;
 		case 5:
-			return "build";
+			return "destroy";
 			break;
 	}
 }

@@ -34,12 +34,26 @@ void Knowledge::randomize(const double max) {
 	}
 }
 
-int& Knowledge::maxIndex(const int& x, const int& y, const int& offset) const {
+bool Knowledge::makesSense(const int& action, const Platform* platform) const {
+	if (!platform) { return false; }
+	
+	Platform* p = platform->inDirection(direction(action));
+	if (p && (
+		(action < this->action.groupSize * 2 && p->type == 'P') ||
+		(action >= this->action.groupSize * 2 && p->type == 'W'))) {
+		return true;
+	}
+
+	return false;
+};
+
+int& Knowledge::maxIndex(const int& x, const int& y, const int& offset, const Platform* platform) const {
 	int max = offset;
 
 	for (int i = offset+1; i < offset + action.groupSize; i += 1) {
-		if (thoughts[x][y][max] < thoughts[x][y][i] ||
-			(thoughts[x][y][max] == thoughts[x][y][i] && (int)(rand() % 2))) {
+		if ((thoughts[x][y][max] < thoughts[x][y][i] ||
+			(thoughts[x][y][max] == thoughts[x][y][i] && (int)(rand() % 2))) &&
+			makesSense(i, platform)) {
 			max = i;
 		}
 	}
@@ -47,16 +61,23 @@ int& Knowledge::maxIndex(const int& x, const int& y, const int& offset) const {
 	return max;
 }
 
-int& Knowledge::bestAction(const int& x, const int& y) const {
+int& Knowledge::bestAction(const int& x, const int& y, const Platform* platform, const int& walls) const {
+	/*cout << "*";
+	for (int i = 0; i < action.size; i++) {
+		cout << thoughts[x][y][i] << ",";
+	}
+	cout << "*";*/
+	
 	int maxI = 0;
 	int actions[] = {
-		maxIndex(x, y, 0 * action.groupSize),
-		maxIndex(x, y, 1 * action.groupSize),
-		maxIndex(x, y, 2 * action.groupSize),
+		maxIndex(x, y, 0 * action.groupSize, platform),
+		walls ? maxIndex(x, y, 1 * action.groupSize, platform) : 0,
+		maxIndex(x, y, 2 * action.groupSize, platform),
 	};
 
 	for (int i = 1; i < 3; i++) {
-		if (thoughts[x][y][actions[maxI]] < thoughts[x][y][actions[i]]) {
+		if (thoughts[x][y][actions[maxI]] < thoughts[x][y][actions[i]] ||
+		    (thoughts[x][y][actions[maxI]] == thoughts[x][y][actions[i]] && (int)(rand() % 2))) {
 			maxI = i;
 		}
 	}
@@ -68,7 +89,7 @@ int Knowledge::random() const {
 }
 
 Direction Knowledge::direction(const int& a) const {
-	switch (a % 4) {
+	switch (a % action.groupSize) {
 	case action.stepLeft:
 		return Direction::left;
 		break;
@@ -94,14 +115,22 @@ Knowledge::~Knowledge() {
 	delete thoughts;
 }
 
-ostream& Knowledge::draw(ostream& os, const int& x, const int& y) const {
-	int offset = (bestAction(x, y) / action.groupSize) * action.groupSize;
+ostream& Knowledge::draw(ostream& os, const int& x, const int& y, const Platform* platform, const int& walls) const {
+	/*for (int i = 0; i < action.size; i++) {
+		os << thoughts[x][y][i] << ",";
+	}
+
+	os << "<-";*/
+	
+	int offset = (bestAction(x, y, platform, walls) / action.groupSize) * action.groupSize;
 	for (int i = offset; i < offset + action.groupSize; i++) {
 		os << thoughts[x][y][i] << ",";
 	}
 
-	os << thoughts[x][y][maxIndex(x, y, 1 * action.groupSize)] << ","
-		<< thoughts[x][y][maxIndex(x, y, 2 * action.groupSize)];
+	os << thoughts[x][y][maxIndex(x, y, 1 * action.groupSize, platform)] << ","
+		<< thoughts[x][y][maxIndex(x, y, 2 * action.groupSize, platform)];
+
+	//os << endl;
 
 	return os;
 };
@@ -157,7 +186,7 @@ void Agent::learnStep() {
 	int action = 0; 
 	
 	if (((int)(rand() % 100) - 35)) {
-		action = knowledge.bestAction(pos.x, pos.y);
+		action = knowledge.bestAction(pos.x, pos.y, platform, numberOfWalls);
 	} else {
 		action = knowledge.random();
 	}
@@ -173,7 +202,7 @@ void Agent::learnStep() {
 	}
 	
 	Vec2 newPos = platform->getPosition();
-	int newMax = knowledge.bestAction(newPos.x, newPos.y);
+	int newMax = knowledge.bestAction(newPos.x, newPos.y, platform, numberOfWalls);
 
 	knowledge.thoughts[pos.x][pos.y][action] += alpha * (reward + gamma * knowledge.thoughts[newPos.x][newPos.y][newMax] - knowledge.thoughts[pos.x][pos.y][action]);
 }
@@ -182,7 +211,7 @@ void Agent::stepNext() {
 	Platform* old = platform;
 	Vec2 pos = platform->getPosition();
 
-	int action = knowledge.bestAction(pos.x, pos.y);
+	int action = knowledge.bestAction(pos.x, pos.y, platform, numberOfWalls);
 
 	Direction dir = knowledge.direction(action);
 
@@ -196,7 +225,7 @@ void Agent::setEnd(EndPlatform platform) {
     finish = platform;
     Vec2 pos = platform.platform->getPosition();
 
-    for(int i = 0; i < 4; i++){
+    for(int i = 0; i < 12; i++){
         knowledge.thoughts[pos.x][pos.y][i] = finish.reward;
     }
 }
@@ -248,7 +277,7 @@ double Agent::changePlatform(const Direction &dir, const int& act) {
 		return -1000.0;
 	}
 
-	double reward = -10;
+	double reward = -20;
 
 	if (act == 1) {
 		built = 1;
@@ -272,7 +301,7 @@ bool Agent::restart() {
 }
 
 ostream& Agent::draw(ostream &os, const int &i, const int &j) const {
-	knowledge.draw(os, i, j);
+	knowledge.draw(os, i, j, platform, numberOfWalls);
 
 	return os;
 }

@@ -38,7 +38,7 @@ public:
 	bool changePlatform(const char &type);
 	virtual bool isChangeable() = 0;
 
-    Platform* inDirection(const Direction &dir);
+    Platform* inDirection(const Direction &dir) const;
 	virtual bool step(Agent *agent) = 0;
 
 	virtual Platform* clone() const = 0;

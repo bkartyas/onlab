@@ -86,8 +86,8 @@ vector<Agent*> Pitch::initialize(){
 		agents.push_back(agent_end_pair.first);
 		agent_end_pair.first->setEpoch(agents.size() * epoch / agent_end.size());
 		if (agent_end_pair.first && agent_end_pair.second.platform) {
-			agent_end_pair.first->setEnd(agent_end_pair.second);
 			agent_end_pair.first->randomizeQ(maxRe);
+			agent_end_pair.first->setEnd(agent_end_pair.second);
 		}
 	}
 	
@@ -102,23 +102,24 @@ void Pitch::learn(function<void()> callAfterStep) {
 	while (!end) {
 		bool epochEnd = true;
 		for (auto &agent: agents) {
+			cout << *this << endl;
 			if (agent->learn()) {
 				epochEnd = false;
 			}
-			cout << *this << endl;
 			callAfterStep();
 		}
 		if (epochEnd) {
-			end = true; 
+			cout << *this << endl;
+			end = true;
 			for (auto &agent : agents) {
 				bool back = agent->restart();
 				end = end && !back;
 			}
 
 			resetPitch();
-			cout << *this << endl;
 		}
 	}
+	cout << *this << endl;
 }
 
 void Pitch::resetPitch() {

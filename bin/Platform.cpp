@@ -32,8 +32,6 @@ bool Platform::changePlatform(const char& type) {
 	platform->right = this->right;
 	platform->down = this->down;
 
-	Platform* inDir = this->inDirection(Direction::left);
-	
 	if (platform->left) { platform->left->right = platform; };
 	if (platform->up) { platform->up->down = platform; };
 	if (platform->right) { platform->right->left = platform; };
@@ -42,7 +40,7 @@ bool Platform::changePlatform(const char& type) {
 	return true;
 }
 
-Platform* Platform::inDirection(const Direction &dir){
+Platform* Platform::inDirection(const Direction &dir) const {
     Platform* next = nullptr;
     switch(dir){
         case Direction::left:

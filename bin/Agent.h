@@ -29,15 +29,16 @@ public:
 	Knowledge(const int& x, const int& y);
 	void randomize(const double max);
 
-	int& maxIndex(const int& x, const int& y, const int& offset) const;
-	int& bestAction(const int& x, const int& y) const;
+	bool makesSense(const int& action, const Platform* platform) const;
+	int& maxIndex(const int& x, const int& y, const int& offset, const Platform* platform) const;
+	int& bestAction(const int& x, const int& y, const Platform* platform, const int& walls) const;
 	int random() const;
 	Direction direction(const int& a) const;
 
 	~Knowledge();
 
 
-	ostream& draw(ostream& os, const int& x, const int& y) const;
+	ostream& draw(ostream& os, const int& x, const int& y, const Platform* platform, const int& walls) const;
 	ostream& draw(ostream& os) const;
 };
 
@@ -48,7 +49,7 @@ class Agent {
 	int epoch;
 	double alpha, gamma;
 	int built = 0;
-	int numberOfWalls = 3;
+	int numberOfWalls = 5;
 	Knowledge knowledge;
 	Platform* platform;
 	Platform* start;
