@@ -67,21 +67,17 @@ int& Knowledge::bestAction(const int& x, const int& y, const Platform* platform,
 		cout << thoughts[x][y][i] << ",";
 	}
 	cout << "*";*/
-	
-	int maxI = 0;
-	int actions[] = {
-		maxIndex(x, y, 0 * action.groupSize, platform),
-		walls ? maxIndex(x, y, 1 * action.groupSize, platform) : 0,
-		maxIndex(x, y, 2 * action.groupSize, platform),
-	};
-
-	for (int i = 1; i < 3; i++) {
-		if (thoughts[x][y][actions[maxI]] < thoughts[x][y][actions[i]] ||
-		    (thoughts[x][y][actions[maxI]] == thoughts[x][y][actions[i]] && (int)(rand() % 2))) {
-			maxI = i;
+	int max = 0;
+	for (int i = 0; i < action.size; i++) {
+		if ((thoughts[x][y][max] < thoughts[x][y][i] ||
+			(thoughts[x][y][max] == thoughts[x][y][i] && (int)(rand() % 2))) &&
+			makesSense(i, platform)) {
+			if (i >= action.groupSize && i < action.groupSize * 2 && !walls) { continue; }
+			max = i;
 		}
 	}
-	return actions[maxI];
+
+	return max;
 };
 
 int Knowledge::random() const {
@@ -115,7 +111,7 @@ Knowledge::~Knowledge() {
 	delete thoughts;
 }
 
-ostream& Knowledge::draw(ostream& os, const int& x, const int& y, const Platform* platform, const int& walls) const {
+ostream& Knowledge::draw(ostream& os, const int& x, const int& y, Platform* platform, const int& walls) const {
 	/*for (int i = 0; i < action.size; i++) {
 		os << thoughts[x][y][i] << ",";
 	}
@@ -185,12 +181,12 @@ void Agent::learnStep() {
 
 	int action = 0; 
 	
-	if (((int)(rand() % 100) - 35)) {
+	if ((((int) rand() % 100) - 20) > 0) {
 		action = knowledge.bestAction(pos.x, pos.y, platform, numberOfWalls);
 	} else {
 		action = knowledge.random();
 	}
-
+	
 	Direction dir = knowledge.direction(action);
 
 	double reward = 0.0;
@@ -283,7 +279,12 @@ double Agent::changePlatform(const Direction &dir, const int& act) {
 		built = 1;
 		if (numberOfWalls > 0 && next->type != 'W' && next->changePlatform('W')) { numberOfWalls--; reward = next->getChangeReward(); delete next; };
 	} else if (act == 2) {
-		if (next->type != 'P' && next->changePlatform('P')) { reward = next->getChangeReward();  delete next;};
+		if (next->type != 'P' && next->changePlatform('P')) { 
+			Vec2 pos = platform->getPosition();
+			reward = knowledge.bestAction(next->getPosition().x, next->getPosition().y, next, numberOfWalls) - 
+						knowledge.thoughts[pos.x][pos.y][knowledge.action.groupSize + dir];
+			delete next;
+		};
 	}
 
 	return reward;

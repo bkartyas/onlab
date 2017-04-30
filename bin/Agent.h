@@ -38,7 +38,7 @@ public:
 	~Knowledge();
 
 
-	ostream& draw(ostream& os, const int& x, const int& y, const Platform* platform, const int& walls) const;
+	ostream& draw(ostream& os, const int& x, const int& y, Platform* platform, const int& walls) const;
 	ostream& draw(ostream& os) const;
 };
 
@@ -49,7 +49,7 @@ class Agent {
 	int epoch;
 	double alpha, gamma;
 	int built = 0;
-	int numberOfWalls = 5;
+	int numberOfWalls = 3;
 	Knowledge knowledge;
 	Platform* platform;
 	Platform* start;

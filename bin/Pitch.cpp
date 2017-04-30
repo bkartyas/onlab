@@ -62,7 +62,7 @@ vector<Agent*> Pitch::initialize(){
 			string id = settings[0].substr(1, settings[0].size() - 1);
 			
 			char *a;
-			double reward = -10, changeReward = -10;
+			double reward = -10, changeReward = -20;
 			if (settings.size() > 1) {
 				reward = strtod(settings[1].c_str(), &a);
 			} 
